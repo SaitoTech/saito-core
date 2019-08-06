@@ -8,10 +8,15 @@ fn main() {
 
     let mut block: Block = Block::new(vec![], public_key);
     let mut tx: Transaction = Transaction::new(TransactionType::Base);
+
+    println!("{:?}", tx);
+
     let slip: Slip = Slip::new(public_key);
+
+    println!("{:?}", slip);
 
     tx.add_to_slip(slip);
     block.transactions.push(tx);
 
-    println!("{:?}", block);
+//    println!("{:?}", block);
 }

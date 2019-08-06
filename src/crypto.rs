@@ -13,7 +13,6 @@ use base58::{ToBase58};
 
 use crate::transaction::Transaction;
 
-// pub mod crypto {
 pub fn generate_keys() -> (SecretKey, PublicKey) {
     let secp = Secp256k1::new();
     return secp.generate_keypair(&mut thread_rng());
@@ -31,4 +30,5 @@ pub fn sha256_hash(data: Vec<u8>) -> Vec<u8> {
     hasher.input(data);
     return hasher.result().to_vec();
 }
-// }
+
+

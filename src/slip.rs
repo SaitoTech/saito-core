@@ -1,31 +1,25 @@
 use serde::{Serialize, Deserialize};
-use secp256k1::PublicKey;
+use crate::crypto::PublicKey;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Slip {
-    address: PublicKey,
-    amount: f32,
-    block_id: u32,
-    transaction_id: u32,
-    id: u32,
-
-    #[serde(with = "serde_bytes")]
-    block_hash: Vec<u8>,
+    add: PublicKey,
+    amt: u64,
+    bid: u32,
+    tid: u32,
+    sid: u32,
+    bsh: [u8; 32],
 }
 
 impl Slip {
     pub fn new(publickey: PublicKey) -> Slip {
         return Slip {
-            address: publickey,
-            amount: 0.0,
-            block_id: 0,
-            transaction_id: 0,
-            id: 0,
-            block_hash: Vec::new(),
+            add: publickey,
+            amt: 0,
+            bid: 0,
+            tid: 0,
+            sid: 0,
+            bsh: [0; 32],
         }
-    }
-
-    pub fn return_index(&self) -> Vec<u8> {
-        return bincode::serialize(self).unwrap();
     }
 }

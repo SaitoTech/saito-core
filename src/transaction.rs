@@ -1,12 +1,7 @@
-use std::mem::transmute;
 use serde::{Serialize, Deserialize};
-
-use secp256k1::{Signature};
-use merkle::{Hashable};
-use ring::digest::Context;
-
-use crate::helper::{time_since_unix_epoch};
 use crate::slip::{Slip};
+use crate::helper::{create_timestamp};
+use crate::crypto::{Signature};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum TransactionType {
@@ -36,12 +31,12 @@ impl Transaction {
     pub fn new(tx_type: TransactionType) -> Transaction {
         return Transaction {
             id: 0,
-            timestamp: time_since_unix_epoch(),
+            timestamp: create_timestamp(),
             tx_type,
             sig: Signature::from_compact(&[0; 64]).unwrap(),
-            to: Vec::new(),
-            from: Vec::new(),
-            msg: Vec::new()
+            to: vec![],
+            from: vec![],
+            msg: vec![] 
         };
     }
 
@@ -51,22 +46,6 @@ impl Transaction {
 
     pub fn add_from_slip(&mut self, slip: Slip) {
         self.from.push(slip)
-    }
-
-    pub fn return_signature_source(&self) -> Vec<u8> {
-        let mut sig_source_bytes: Vec<u8> = Vec::new();
-        let timestamp_bytes: [u8; 16] = unsafe { transmute(self.timestamp.to_be()) };
-
-        sig_source_bytes.extend(&timestamp_bytes);
-
-        for slip in self.from.iter() {
-            sig_source_bytes.extend(slip.return_index());
-        }
-
-        for slip in self.to.iter() {
-            sig_source_bytes.extend(slip.return_index());
-        }
-        return sig_source_bytes;
     }
 }
 
@@ -81,11 +60,5 @@ impl Clone for Transaction {
             from: self.from.clone(),
             msg: self.msg.clone()
         }
-    }
-}
-
-impl Hashable for Transaction {
-    fn update_context(&self, context: &mut Context) {
-        context.update(&self.return_signature_source());
     }
 }

@@ -1,56 +1,42 @@
 use std::mem::transmute;
-
 use serde::{Serialize, Deserialize};
-use sha2::Sha256;
-use digest::Digest;
-
-use secp256k1::{PublicKey};
-
-use crate::crypto::{sha256_hash, create_merkle_root};
-use crate::helper::{time_since_unix_epoch};
-
+use crate::crypto::{hash, PublicKey};
+use crate::helper::{create_timestamp};
 use crate::transaction::{Transaction};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
     id: u32,
-
-    #[serde(with = "serde_bytes")]
-    previous_hash: Vec<u8>,
-
-    #[serde(with = "serde_bytes")]
-    merkle_root: Vec<u8>,
-
+    previous_hash: [u8; 32],
+    merkle_root: [u8; 32],
     pub timestamp: u128,
     creator: PublicKey,
-
     pub transactions: Vec<Transaction>,
     difficulty: f32,
     paysplit: f32,
-    treasury: f32,
+    treasury: u64,
     coinbase: f32,
     reclaimed: f32
 }
 
 impl Block {
-    pub fn new(previous_hash: Vec<u8>, publickey: PublicKey) -> Block {
+    pub fn new(previous_hash: [u8; 32], publickey: PublicKey) -> Block {
         return Block {
             id: 1,
-            timestamp: time_since_unix_epoch(),
+            timestamp: create_timestamp(),
             previous_hash,
-            merkle_root: Vec::new(),
+            merkle_root: [0; 32],
             creator: publickey,
-            transactions: Vec::new(),
+            transactions: vec![],
             difficulty: 0.0,
             paysplit: 0.5,
-            treasury: 2868100000.0,
+            treasury: 286_810_000_000_000_000,
             coinbase: 0.0,
             reclaimed: 0.0
         };
     }
 
-    pub fn return_block_hash(&self) -> Vec<u8> {
-        let mut hasher = Sha256::new();
+    pub fn return_block_hash(&self) -> [u8; 32] {
         let mut data: Vec<u8> = vec![];
 
         let id_bytes: [u8; 4] = unsafe { transmute(self.id.to_be()) };
@@ -61,27 +47,10 @@ impl Block {
         data.extend(&timestamp_bytes);
         data.extend(&address_bytes);
 
-        return sha256_hash(data);
-    }
+        let mut output: [u8; 32] = [0; 32];
 
-    pub fn return_transactions(&self) -> Vec<Transaction> {
-        return self.transactions.clone();
-    }
+        hash(data, &mut output);
 
-    pub fn set_merkle_root(&mut self) {
-        self.merkle_root = create_merkle_root(&self.transactions.clone());
-    }
-
-    pub fn return_slip_len(&self) -> u32 {
-        let mut slip_number: u32 = 0;
-        for tx in self.transactions.iter() {
-            slip_number += tx.to.len() as u32;
-            slip_number += tx.from.len()as u32;
-        }
-        return slip_number
-    }
-
-    pub fn return_tx_len(&self) -> u32{
-        return self.transactions.len() as u32;
+        return output;
     }
 }

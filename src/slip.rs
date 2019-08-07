@@ -11,7 +11,7 @@ pub struct Slip {
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct SlipBody {
     add: PublicKey,
-    typ: SlipType,
+    typ: SlipBroadcastType,
     amt: u64,
     bid: u32,
     tid: u32,
@@ -20,7 +20,7 @@ pub struct SlipBody {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-pub enum SlipType{
+pub enum SlipBroadcastType{
   Normal,
   GoldenTicket,
   Fee,
@@ -34,7 +34,7 @@ impl Slip {
         return Slip {
             body: SlipBody {
                 add: publickey,
-                typ: SlipType::Normal,
+                typ: SlipBroadcastType::Normal,
                 amt: 0,
                 bid: 0,
                 tid: 0,
@@ -46,3 +46,7 @@ impl Slip {
         }
     }
 }
+
+
+
+

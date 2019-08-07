@@ -7,13 +7,11 @@ use crate::burnfee::BurnFee;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
-
     body:     BlockBody,
     is_valid: u8,
     mintid:   u32,
     maxtid:   u32,
     bsh:      [u8; 32],
-
 }
 
 
@@ -24,7 +22,7 @@ pub struct BlockBody {
     prevhash:        [u8; 32],
     merkle:          [u8; 32],
     pub creator:     PublicKey,
-    pub tx:          Vec<Transaction>,
+    pub txs:         Vec<Transaction>,
     bf:		     BurnFee,
     difficulty:      f32,
     paysplit:        f32,
@@ -43,9 +41,9 @@ impl BlockBody {
     	    ts:          return_timestamp(),
     	    prevhash:    previous_hash,
     	    merkle:      [0; 32],
-    	    creator:     [0; 32],
-    	    tx:          vec![],
-	    bf:          BurnFee,
+    	    creator:     creator,
+    	    txs:         vec![],
+	    bf:          BurnFee::new(0.0, 0.0),
     	    difficulty:  0.0,
     	    paysplit:    0.0,
     	    vote:        0,
@@ -55,10 +53,11 @@ impl BlockBody {
         };
     }
 }
+
 impl Block {
-    pub fn new(prevhash: [u8; 32] , publickey: PublicKey) -> Block {
+    pub fn new(prevhash: [u8; 32], creator: PublicKey) -> Block {
         return Block {
-	    body:      BlockBody { prevhash : prevhash , creator : publickey },
+	    body:      BlockBody::new(prevhash, creator),
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,
@@ -66,14 +65,16 @@ impl Block {
         };
     }
 
-
+    pub fn add_transaction(&mut self, tx: Transaction) {
+        self.body.txs.push(tx);
+    }
 
     pub fn return_block_hash(&self) -> [u8; 32] {
 
         let mut data: Vec<u8> = vec![];
 
         let id_bytes: [u8; 4] = unsafe { transmute(self.body.id.to_be()) };
-        let ts_bytes: [u8; 16] = unsafe { transmute(self.body.ts.to_be()) };
+        let ts_bytes: [u8; 8] = unsafe { transmute(self.body.ts.to_be()) };
         let cr_bytes: Vec<u8> = self.body.creator.serialize().iter().cloned().collect();
 
         data.extend(&id_bytes);

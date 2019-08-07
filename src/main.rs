@@ -16,7 +16,7 @@ fn main() {
     println!("{:?}", slip);
 
     tx.add_to_slip(slip);
-    block.transactions.push(tx);
+    block.add_transaction(tx);
 
     println!("{:?}", block);
 }

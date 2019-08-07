@@ -3,6 +3,13 @@ use crate::crypto::PublicKey;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Slip {
+    body: SlipBody,
+    lc: u8,
+}
+
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+pub struct SlipBody {
     add: PublicKey,
     amt: u64,
     bid: u32,
@@ -14,12 +21,15 @@ pub struct Slip {
 impl Slip {
     pub fn new(publickey: PublicKey) -> Slip {
         return Slip {
-            add: publickey,
-            amt: 0,
-            bid: 0,
-            tid: 0,
-            sid: 0,
-            bsh: [0; 32],
+            body: SlipBody {
+                add: publickey,
+                amt: 0,
+                bid: 0,
+                tid: 0,
+                sid: 0,
+                bsh: [0; 32],
+            },
+            lc: 0
         }
     }
 }

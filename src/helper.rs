@@ -6,3 +6,4 @@ pub fn create_timestamp() -> u64 {
         .expect("Time went backwards");
     return since_the_epoch.as_millis() as u64;
 }
+

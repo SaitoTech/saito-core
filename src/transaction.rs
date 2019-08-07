@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use crate::slip::{Slip};
-use crate::helper::{create_timestamp};
+use crate::helper::{return_timestamp};
 use crate::crypto::{Signature};
 
 
@@ -52,7 +52,7 @@ impl Transaction {
         return Transaction {
             body: TransactionBody {
                 id:   0,
-		ts:   create_timestamp(),
+		ts:   return_timestamp(),
 		to:   vec![],
 		from: vec![],
 		sig:  Signature::from_compact(&[0; 64]).unwrap(),

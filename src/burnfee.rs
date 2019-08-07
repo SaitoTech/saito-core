@@ -11,3 +11,4 @@ impl BurnFee {
         return BurnFee { start, current };
     }
 }
+

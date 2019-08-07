@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use crate::routingpath::RoutingPath;
 use crate::slip::{Slip};
-use crate::helper::{return_timestamp};
+use crate::helper::{create_timestamp};
 use crate::crypto::{Signature};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
@@ -48,7 +48,7 @@ impl Transaction {
         return Transaction {
             body: TransactionBody {
                 id:   0,
-		ts:   return_timestamp(),
+		ts:   create_timestamp(),
 		to:   vec![],
 		from: vec![],
 		sig:  Signature::from_compact(&[0; 64]).unwrap(),

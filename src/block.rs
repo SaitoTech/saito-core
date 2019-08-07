@@ -1,8 +1,9 @@
 use std::mem::transmute;
 use serde::{Serialize, Deserialize};
 use crate::crypto::{hash, PublicKey};
-use crate::helper::{create_timestamp};
-use crate::transaction::{Transaction};
+use crate::helper::create_timestamp;
+use crate::transaction::Transaction;
+use crate::burnfee::BurnFee;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {

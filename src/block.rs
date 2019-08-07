@@ -15,8 +15,8 @@ pub struct Block {
     difficulty: f32,
     paysplit: f32,
     treasury: u64,
-    coinbase: f32,
-    reclaimed: f32
+    coinbase: u64,
+    reclaimed: u64
 }
 
 impl Block {

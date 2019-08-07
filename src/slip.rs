@@ -45,6 +45,11 @@ impl Slip {
             is_valid: 0,
         }
     }
+
+    // implication is slip type is immutable
+    pub fn return_signature_source(&self) -> Vec<u8> {
+       return bincode::serialize(&self.body).unwrap();
+    }
 }
 
 

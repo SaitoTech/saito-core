@@ -1,8 +1,8 @@
 use serde::{Serialize, Deserialize};
+use crate::routingpath::RoutingPath;
 use crate::slip::{Slip};
 use crate::helper::{return_timestamp};
 use crate::crypto::{Signature};
-
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum TransactionBroadcastType {
@@ -14,11 +14,10 @@ pub enum TransactionBroadcastType {
   GoldenChunk,
 }
 
-
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct TransactionBody {
     id:   u32,
-    ts:   u128,
+    ts:   u64,
     pub   to: Vec<Slip>,
     pub   from: Vec<Slip>,
     sig:  Signature,
@@ -29,8 +28,7 @@ pub struct TransactionBody {
     ps:   u8,
 }
 
-
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Transaction {
 
     body: TransactionBody,
@@ -44,11 +42,9 @@ pub struct Transaction {
 //    decrypted_msg: Vec<u8>,
 
 }
-
    
-
 impl Transaction {
-    pub fn new(tx_type: TransactionBroadcastType) -> Transaction {
+    pub fn new() -> Transaction {
         return Transaction {
             body: TransactionBody {
                 id:   0,
@@ -75,22 +71,6 @@ impl Transaction {
     }
 }
 
-
-
-
-
-impl Clone for Transaction {
-    fn clone(&self) -> Transaction {
-        Transaction {
-            body: self.body.clone(),
-            is_valid: self.is_valid
-        }
-    }
-}
-
-
-
-
 impl Clone for TransactionBody {
     fn clone(&self) -> TransactionBody {
         TransactionBody {
@@ -102,7 +82,7 @@ impl Clone for TransactionBody {
 	    ver:  self.ver,
 	    typ:  self.typ,
 	    path: self.path.clone(),
-	    msg:  self.path.clone(),
+	    msg:  self.msg.clone(),
 	    ps:   self.ps
         }
     }

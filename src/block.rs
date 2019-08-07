@@ -2,11 +2,13 @@ use std::mem::transmute;
 use serde::{Serialize, Deserialize};
 use crate::crypto::{hash, PublicKey};
 use crate::helper::{return_timestamp};
-use crate::transaction::{Transaction};
+use crate::transaction::Transaction;
+use crate::burnfee::BurnFee;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
 
+    body:     BlockBody,
     is_valid: u8,
     mintid:   u32,
     maxtid:   u32,
@@ -17,25 +19,25 @@ pub struct Block {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockBody {
-    id:          u32,
-    ts:          u64,
-    prevhash:    [u8; 32],
-    merkle:      [u8; 32],
-    creator:     [u8; 32],
-    tx:          Vec<Transaction>,
-// BURN FEE OBJ
-    difficulty:  f32,
-    paysplit:    f32,
-    vote:        i8,
-    treasury: u64,
-    coinbase: u64,
-    reclaimed: u64
+    pub id:          u32,
+    pub ts:          u64,
+    prevhash:        [u8; 32],
+    merkle:          [u8; 32],
+    pub creator:     PublicKey,
+    pub tx:          Vec<Transaction>,
+    bf:		     BurnFee,
+    difficulty:      f32,
+    paysplit:        f32,
+    vote:            i8,
+    treasury:        u64,
+    coinbase:        u64,
+    reclaimed:       u64
 }
 
 
 
 impl BlockBody {
-    pub fn new(previous_hash: [u8; 32]) -> BlockBody {
+    pub fn new(previous_hash: [u8; 32] , creator : PublicKey ) -> BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          return_timestamp(),
@@ -43,7 +45,7 @@ impl BlockBody {
     	    merkle:      [0; 32],
     	    creator:     [0; 32],
     	    tx:          vec![],
-// BURN FEE OBJ
+	    bf:          BurnFee,
     	    difficulty:  0.0,
     	    paysplit:    0.0,
     	    vote:        0,
@@ -54,9 +56,9 @@ impl BlockBody {
     }
 }
 impl Block {
-    pub fn new(prevhash: [u8; 32]) -> Block {
+    pub fn new(prevhash: [u8; 32] , publickey: PublicKey) -> Block {
         return Block {
-	    body:      BlockBody { prevhash },
+	    body:      BlockBody { prevhash : prevhash , creator : publickey },
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,
@@ -71,12 +73,12 @@ impl Block {
         let mut data: Vec<u8> = vec![];
 
         let id_bytes: [u8; 4] = unsafe { transmute(self.body.id.to_be()) };
-        let timestamp_bytes: [u8; 16] = unsafe { transmute(self.body.ts.to_be()) };
-        let address_bytes: Vec<u8> = self.body.creator.serialize().iter().cloned().collect();
+        let ts_bytes: [u8; 16] = unsafe { transmute(self.body.ts.to_be()) };
+        let cr_bytes: Vec<u8> = self.body.creator.serialize().iter().cloned().collect();
 
         data.extend(&id_bytes);
-        data.extend(&timestamp_bytes);
-        data.extend(&address_bytes);
+        data.extend(&ts_bytes);
+        data.extend(&cr_bytes);
 
         let mut output: [u8; 32] = [0; 32];
 

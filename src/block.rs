@@ -31,8 +31,8 @@ impl Block {
             difficulty: 0.0,
             paysplit: 0.5,
             treasury: 286_810_000_000_000_000,
-            coinbase: 0.0,
-            reclaimed: 0.0
+            coinbase: 0,
+            reclaimed: 0,
         };
     }
 

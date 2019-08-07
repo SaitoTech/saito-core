@@ -15,7 +15,7 @@ pub enum TransactionBroadcastType {
 }
 
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct TransactionBody {
     id:   u32,
     ts:   u128,
@@ -30,7 +30,7 @@ pub struct TransactionBody {
 }
 
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Transaction {
 
     body: TransactionBody,
@@ -79,21 +79,34 @@ impl Transaction {
 
 
 
-/***
 impl Clone for Transaction {
     fn clone(&self) -> Transaction {
         Transaction {
-            id: self.id,
-            tx_type: self.tx_type,
-            timestamp: self.timestamp,
-            sig: self.sig,
-            to: self.to.clone(),
-            from: self.from.clone(),
-            msg: self.msg.clone()
+            body: self.body.clone(),
+            is_valid: self.is_valid
         }
     }
 }
-***/
+
+
+
+
+impl Clone for TransactionBody {
+    fn clone(&self) -> TransactionBody {
+        TransactionBody {
+            id:   self.id,
+	    ts:   self.ts,
+	    to:   self.to.clone(),
+	    from: self.from.clone(),
+	    sig:  self.sig,
+	    ver:  self.ver,
+	    typ:  self.typ,
+	    path: self.path.clone(),
+	    msg:  self.path.clone(),
+	    ps:   self.ps
+        }
+    }
+}
 
 
 

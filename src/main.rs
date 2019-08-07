@@ -2,9 +2,15 @@ use saito_core::block::Block;
 use saito_core::transaction::{Transaction};
 use saito_core::slip::Slip;
 use saito_core::blockchain::Blockchain;
+use saito_core::wallet::Wallet;
 use saito_core::crypto::generate_keys;
 
+
 fn main() {
+
+    let wallet: Wallet = Wallet::new();
+
+    println!("{:?}", wallet);
 
     let mut blockchain: Blockchain = Blockchain::new();
     let mut tx: Transaction = Transaction::new();

@@ -3,8 +3,9 @@ use crate::slip::{Slip};
 use crate::helper::{create_timestamp};
 use crate::crypto::{Signature};
 
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
-pub enum TransactionType {
+pub enum TransactionBroadcastType {
   Normal,
   GoldenTicket,
   Fee,
@@ -13,22 +14,43 @@ pub enum TransactionType {
   GoldenChunk,
 }
 
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct Transaction {
-    id: u32,
-    tx_type: TransactionType,
-    timestamp: u128,
-    sig: Signature,
-
-    pub to: Vec<Slip>,
-    pub from: Vec<Slip>,
-
-    #[serde(with = "serde_bytes")]
-    pub msg: Vec<u8>,
+pub struct TransactionBody {
+    id:   u32,
+    ts:   u128,
+    pub   to: Vec<Slip>,
+    pub   from: Vec<Slip>,
+    sig:  Signature,
+    ver:  s16,
+    typ:  TransactionBroadcastType,
+    path: Vec<RoutingPath>,
+    msg:  Vec<u8>,
+    ps:   u8,
 }
 
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+pub struct Transaction {
+
+    body: TransactionBody,
+    is_valid: u8,
+
+    #[serde(with = "serde_bytes")]
+
+//    msg_hash: [u8; 32],
+//    size: u64,
+//    fees_total: u64,
+//    fees_usable_for_block_producer: u64,
+//    fees_cumulative: s64,
+//    decrypted_msg: Vec<u8>,
+
+}
+
+   
+
 impl Transaction {
-    pub fn new(tx_type: TransactionType) -> Transaction {
+    pub fn new(tx_type: TransactionBroadcastType) -> Transaction {
         return Transaction {
             id: 0,
             timestamp: create_timestamp(),

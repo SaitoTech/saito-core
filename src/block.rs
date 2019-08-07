@@ -37,15 +37,15 @@ pub struct BlockBody {
 
 
 impl BlockBody {
-    pub fn new(previous_hash: [u8; 32] , creator : PublicKey ) -> BlockBody {
+    pub fn new(previous_hash: [u8; 32] , block_creator : PublicKey ) -> BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          return_timestamp(),
     	    prevhash:    previous_hash,
     	    merkle:      [0; 32],
-    	    creator:     [0; 32],
+    	    creator:     block_creator,
     	    tx:          vec![],
-	    bf:          BurnFee,
+	    bf:          BurnFee { start : 0.0 , current : 0.0 },
     	    difficulty:  0.0,
     	    paysplit:    0.0,
     	    vote:        0,
@@ -56,9 +56,9 @@ impl BlockBody {
     }
 }
 impl Block {
-    pub fn new(prevhash: [u8; 32] , publickey: PublicKey) -> Block {
+    pub fn new(prevhash: [u8; 32] , creator: PublicKey) -> Block {
         return Block {
-	    body:      BlockBody { prevhash : prevhash , creator : publickey },
+	    body:      BlockBody::new(prevhash, creator),
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,
@@ -73,7 +73,7 @@ impl Block {
         let mut data: Vec<u8> = vec![];
 
         let id_bytes: [u8; 4] = unsafe { transmute(self.body.id.to_be()) };
-        let ts_bytes: [u8; 16] = unsafe { transmute(self.body.ts.to_be()) };
+        let ts_bytes: [u8; 8] = unsafe { transmute(self.body.ts.to_be()) };
         let cr_bytes: Vec<u8> = self.body.creator.serialize().iter().cloned().collect();
 
         data.extend(&id_bytes);

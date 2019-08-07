@@ -18,7 +18,7 @@ pub enum TransactionBroadcastType {
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct TransactionBody {
     id:   u32,
-    ts:   u128,
+    ts:   u64,
     pub   to: Vec<Slip>,
     pub   from: Vec<Slip>,
     sig:  Signature,

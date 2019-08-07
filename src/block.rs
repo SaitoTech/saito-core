@@ -9,7 +9,7 @@ pub struct Block {
     id: u32,
     previous_hash: [u8; 32],
     merkle_root: [u8; 32],
-    pub timestamp: u128,
+    pub timestamp: u64,
     creator: PublicKey,
     pub transactions: Vec<Transaction>,
     difficulty: f32,

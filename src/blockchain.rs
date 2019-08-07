@@ -6,13 +6,17 @@ use crate::block::{Block};
 //
 // The Blockchain
 //
+// the contents of this data object represent the state of the
+// blockchain itself, including the blocks that are on the 
+// longest-chain as well as the material that is sitting off
+// the longest-chain but capable of being switched over.
+//
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Blockchain {
     index:          BlockchainIndex,
     bsh_lc_hmap:    HashMap<[u8; 32], u8>,
     bsh_bid_hmap:   HashMap<[u8; 32], u32>,
 }
-
 
 
 impl Blockchain {
@@ -23,6 +27,12 @@ impl Blockchain {
 	    bsh_bid_hmap:  HashMap::new(),
         };
     }
+
+
+    pub fn add_block(&mut self, blk: Block) {
+      println!("{:?}", blk);
+    }
+
 }
 
 
@@ -64,4 +74,14 @@ impl BlockchainIndex {
         };
     }
 }
+
+
+
+
+
+
+
+
+
+
 

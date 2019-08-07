@@ -5,7 +5,7 @@ use crate::crypto::{Signature};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum TransactionType {
-  Base,
+  Normal,
   GoldenTicket,
   Fee,
   Rebroadcast,
@@ -62,3 +62,6 @@ impl Clone for Transaction {
         }
     }
 }
+
+
+

@@ -35,11 +35,11 @@ pub struct BlockBody {
 
 
 impl BlockBody {
-    pub fn new(previous_hash: [u8; 32] , block_creator : PublicKey ) -> BlockBody {
+    pub fn new(block_creator: PublicKey) -> BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          create_timestamp(),
-    	    prevhash:    previous_hash,
+    	    prevhash:    [0; 32],
     	    merkle:      [0; 32],
     	    creator:     block_creator,
     	    txs:         vec![],
@@ -55,9 +55,9 @@ impl BlockBody {
 }
 
 impl Block {
-    pub fn new(prevhash: [u8; 32], creator: PublicKey) -> Block {
+    pub fn new(creator: PublicKey) -> Block {
         return Block {
-	    body:      BlockBody::new(prevhash, creator),
+	    body:      BlockBody::new(creator),
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,

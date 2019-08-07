@@ -6,7 +6,7 @@ use saito_core::crypto::generate_keys;
 fn main() {
     let (_secret_key, public_key) = generate_keys();
 
-    let mut block: Block = Block::new([0; 32], public_key);
+    let mut block: Block = Block::new(public_key);
     let mut tx: Transaction = Transaction::new();
 
     println!("{:?}", tx);

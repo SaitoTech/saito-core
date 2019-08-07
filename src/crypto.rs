@@ -1,11 +1,8 @@
 use sha2::Sha256;
 use digest::Digest;
-
 pub use merkle::{MerkleTree, Hashable};
-
 pub use ring::digest::{SHA256, Context};
 pub use secp256k1::{Secp256k1, Message, Signature, SecretKey, PublicKey};
-
 pub use rand::{Rng, thread_rng};
 pub use base58::{ToBase58};
 

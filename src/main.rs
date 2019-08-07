@@ -4,9 +4,25 @@ use saito_core::slip::Slip;
 use saito_core::blockchain::Blockchain;
 use saito_core::wallet::Wallet;
 use saito_core::crypto::generate_keys;
+use saito_core::shashmap::Shashmap;
 
 
 fn main() {
+
+
+    let v1 = String::from("Testing");
+    let v2 = String::from("Testing2");
+
+    let mut shashmap: Shashmap = Shashmap::new();
+
+    println!("{:?}", &v1);
+    println!("{:?}", &v2);
+
+    shashmap.insert(v1, 1313);
+    shashmap.insert(v2, 2434);
+
+    let xx = shashmap.return_value(String::from("Testing"));
+   println!("{:?}", xx);
 
     let wallet: Wallet = Wallet::new();
 

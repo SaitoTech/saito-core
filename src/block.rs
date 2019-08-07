@@ -40,7 +40,7 @@ impl Block {
         let mut data: Vec<u8> = vec![];
 
         let id_bytes: [u8; 4] = unsafe { transmute(self.id.to_be()) };
-        let timestamp_bytes: [u8; 16] = unsafe { transmute(self.timestamp.to_be()) };
+        let timestamp_bytes: [u8; 8] = unsafe { transmute(self.timestamp.to_be()) };
         let address_bytes: Vec<u8> = self.creator.serialize().iter().cloned().collect();
 
         data.extend(&id_bytes);

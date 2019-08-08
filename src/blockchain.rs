@@ -20,6 +20,7 @@ pub struct Blockchain {
 
 
 impl Blockchain {
+
     pub fn new() -> Blockchain {
         return Blockchain {
 	    index:         BlockchainIndex::new(),

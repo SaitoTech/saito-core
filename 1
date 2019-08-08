@@ -1,0 +1,16 @@
+use hashbrown::HashMap;
+
+
+pub struct Shashmap {
+    hashmap: HashMap<Vec<u8>, i32>,
+}
+
+impl Shashmap {
+    pub fn new() -> Shashmap {
+        return Shashmap {
+	    hashmap: HashMap::new() ,
+        }
+    }
+}
+
+

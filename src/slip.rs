@@ -6,6 +6,7 @@ pub struct Slip {
     body: SlipBody,
     lc: u8,
     is_valid: u8,
+    spent_status: SlipSpentStatus,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
@@ -20,13 +21,20 @@ pub struct SlipBody {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-pub enum SlipBroadcastType{
+pub enum SlipBroadcastType {
   Normal,
   GoldenTicket,
   Fee,
   Rebroadcast,
   VIP,
   GoldenChunk,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+pub enum SlipSpentStatus {
+  Unspent,
+  Spent,
+  Pending,
 }
 
 impl Slip {
@@ -43,6 +51,7 @@ impl Slip {
             },
             lc: 0,
             is_valid: 0,
+            spent_status: SlipSpentStatus::Normal,
         }
     }
 

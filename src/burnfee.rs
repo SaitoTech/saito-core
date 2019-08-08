@@ -34,9 +34,9 @@ impl BurnFeeCalculator {
 
     pub fn calculate(&self, mut elapsed_time: u64) -> u64 {
         let elapsed_time_float = elapsed_time as f64 / 1000.0;
-        let heart_beat_float = self.heartbeat as f64 * 2.0;
+        let double_heart_beat_float = self.heartbeat as f64 * 2.0;
 
-        if elapsed_time_float > heart_beat_float { return 0; }
+        if elapsed_time_float > double_heart_beat_float { return 0; }
 
         if elapsed_time == 0 { elapsed_time = 1; }
 

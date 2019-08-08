@@ -6,6 +6,23 @@ use saito_core::wallet::Wallet;
 use saito_core::crypto::generate_keys;
 use saito_core::shashmap::Shashmap;
 
+struct Saito {
+    blockchain: Blockchain,
+    creator: Creator,
+    wallet: Wallet,
+}
+
+impl Saito {
+    pub fn new() {
+        blockchain: Blockchain::new(),
+        creator: Creator::new(),
+        wallet: Wallet::new(),
+    }
+
+    pub fn init(&self) {
+        self.creator.bundle();
+    }
+}
 
 fn main() {
 

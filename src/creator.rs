@@ -4,19 +4,19 @@ use crate::transaction::Transaction;
 use crate::burnfee::BurnFeeCalculator;
 
 #[derive(Debug)]
-pub struct Mempool {
+pub struct Creator {
     blocks: Vec<Block>,
     transactions: Vec<Transaction>>,
     burn_fee_calc: BurnFeeCalculator,
     work: u64,
 }
 
-impl Mempool {
-    pub fn new() -> Mempool {
-        return (Mempool{
+impl Creator {
+    pub fn new() -> Creator {
+        return Creator {
             blocks: vec![],
             transactions: vec![],
-        });
+        };
     }
 
     pub fn add_transaction(&mut self, tx: Transaction) { 

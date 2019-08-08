@@ -1,7 +1,8 @@
-use hashbrown::HashMap;
+use std::collections::HashMap;
 
 
 pub struct Shashmap {
+    // might want i32 as to include the negative numbers for unspent tx to 
     hashmap: HashMap<Vec<u8>, u32>,
 }
 
@@ -17,9 +18,8 @@ impl Shashmap {
         self.hashmap.insert(_x, _y);
     }
 
-    pub fn return_value(&mut self, _x: String) -> u32 {
-        let rv = self.hashmap.get(&_x);
-	return Some(rv);
+    pub fn return_value(&self, slip_index: Vec<u8>) -> Option<&u32> {
+        return self.hashmap.get(&slip_index);
     }
 
 /***

@@ -41,6 +41,11 @@ impl Wallet {
 	    slips_limit:                 10000,
         };
     }
+
+    pub fn return_publickey(&self) -> PublicKey {
+        return self.body.publickey;
+    }
+
 }
 
 impl WalletBody {

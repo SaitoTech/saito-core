@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use crate::helper::{create_timestamp};
+use crate::helper::create_timestamp;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct BurnFee {
@@ -23,7 +23,7 @@ pub struct BurnFeeCalculator {
 }
 
 impl BurnFeeCalculator {
-    pub fn new(self)-> BurnFeeCalculator {
+    pub fn new() -> BurnFeeCalculator {
         return BurnFeeCalculator {
             fee: 1_000_000_000,
             heartbeat: 10,
@@ -41,7 +41,8 @@ impl BurnFeeCalculator {
         if elapsed_time == 0 { elapsed_time = 1; }
 
         let elapsed_time_float = elapsed_time as f64;
-        return (self.fee as f64 / (elapsed_time_float / 100_000_000_000 as f64)).round() as u64;
+        let calculation = (self.fee * 100_000_000_000) as f64 / (elapsed_time_float);
+        return calculation.round() as u64;
     }
 
     pub fn return_current_burnfee(&self) -> u64 {

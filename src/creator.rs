@@ -6,7 +6,7 @@ use crate::burnfee::BurnFeeCalculator;
 #[derive(Debug)]
 pub struct Creator {
     blocks: Vec<Block>,
-    transactions: Vec<Transaction>>,
+    transactions: Vec<Transaction>,
     burn_fee_calc: BurnFeeCalculator,
     work: u64,
 }
@@ -16,7 +16,13 @@ impl Creator {
         return Creator {
             blocks: vec![],
             transactions: vec![],
+            burn_fee_calc: BurnFeeCalculator::new(),
+            work: 0,
         };
+    }
+
+    pub fn add_block(&mut self, block: Block) {
+        self.blocks.push(block);
     }
 
     pub fn add_transaction(&mut self, tx: Transaction) { 
@@ -34,12 +40,13 @@ impl Creator {
     pub fn bundle(&self) {
         loop {
             // check how much work we have based on tx fees 
-            if burn_fee_calc.return_current_burnfee() > 0 {
+            if self.burn_fee_calc.return_current_burnfee() > self.work {
                 return;
+                panic!("We have nothign to do here");
             } else {
                 let one_second = time::Duration::from_millis(1000);
                 thread::sleep(one_second);
-                println!("FEE -- {:.8}", burnfee.return_current_burnfee());
+                println!("FEE -- {:.8}", self.burn_fee_calc.return_current_burnfee());
             }
         }
     }

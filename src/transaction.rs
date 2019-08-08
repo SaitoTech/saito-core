@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use crate::routingpath::RoutingPath;
+use crate::hop::{Hop};
 use crate::slip::{Slip};
 use crate::helper::{create_timestamp};
 use crate::crypto::{Signature};
@@ -23,7 +23,7 @@ pub struct TransactionBody {
     sig:  Signature,
     ver:  f32,
     typ:  TransactionBroadcastType,
-    path: Vec<RoutingPath>,
+    path: Vec<Hop>,
     msg:  Vec<u8>,
     ps:   u8,
 }

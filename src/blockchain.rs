@@ -49,7 +49,8 @@ impl Blockchain {
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockchainIndex {
-    blocks:      Vec<Block>,                // blocks
+    blocks:      Vec<Block>,                  // blocks
+												// are blocks moved back out
     hash:        Vec<[u8; 32]>,               // hashes
     prevhash:    Vec<[u8; 32]>,               // hash of previous block
     bid:         Vec<[u32; 1]>,               // block id

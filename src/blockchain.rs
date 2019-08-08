@@ -18,7 +18,6 @@ pub struct Blockchain {
     bsh_bid_hmap:   HashMap<[u8; 32], u32>,
 }
 
-
 impl Blockchain {
 
     pub fn new() -> Blockchain {
@@ -31,7 +30,7 @@ impl Blockchain {
 
 
     pub fn add_block(&mut self, blk: Block) {
-      println!("{:?}", blk);
+        println!("{:?}", blk);
     }
 
 }
@@ -49,15 +48,15 @@ impl Blockchain {
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockchainIndex {
-    blocks:      Vec<Block>,                // blocks
+    blocks:      Vec<Block>,                  // blocks
     hash:        Vec<[u8; 32]>,               // hashes
     prevhash:    Vec<[u8; 32]>,               // hash of previous block
-    bid:         Vec<[u32; 1]>,               // block id
-    mintid:      Vec<[u32; 1]>,               // min tid
-    maxtid:      Vec<[u32; 1]>,               // max tid
-    ts:          Vec<[u64; 1]>,               // timestamps
-    lc:          Vec<[u8; 1]>,                // is longest chain (0 = no, 1 = yes)
-    bf:          Vec<[f32; 1]>                // burnfee per block
+    bid:         Vec<u32>,                    // block id
+    mintid:      Vec<u32>,
+    maxtid:      Vec<u32>,
+    ts:          Vec<u64>,                    // timestamps
+    lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
+    bf:          Vec<f32>                     // burnfee per block
 }
 
 impl BlockchainIndex {
@@ -75,11 +74,6 @@ impl BlockchainIndex {
         };
     }
 }
-
-
-
-
-
 
 
 

@@ -38,14 +38,24 @@ impl BurnFeeCalculator {
 
         if elapsed_time_float > double_heart_beat_float { return 0; }
 
+        println!("ELAPSED TIME IN SECONDS {}", elapsed_time_float);
+
         if elapsed_time == 0 { elapsed_time = 1; }
 
         let elapsed_time_float = elapsed_time as f64;
-        let calculation = (self.fee * 100_000_000_000) as f64 / (elapsed_time_float);
-        return calculation.round() as u64;
+        let fee_float: f64 = self.fee as f64 * 1000 as f64;
+        let calculation =  fee_float / elapsed_time_float;
+
+        let result = calculation.round() as u64;
+
+        return result;
     }
 
     pub fn return_current_burnfee(&self) -> u64 {
         return self.calculate(create_timestamp() - self.last_block_timestamp);
+    }
+
+    pub fn set_last_block_timestamp(&mut self) {
+        self.last_block_timestamp = create_timestamp();
     }
 }

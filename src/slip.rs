@@ -51,8 +51,16 @@ impl Slip {
             },
             lc: 0,
             is_valid: 0,
-            spent_status: SlipSpentStatus::Normal,
+            spent_status: SlipSpentStatus::Spent,
         }
+    }
+
+    pub fn set_amt(&mut self, amt: u64) {
+        self.body.amt = amt;
+    }
+
+    pub fn return_amt(&self) -> u64 {
+        return self.body.amt;
     }
 
     // implication is slip type is immutable

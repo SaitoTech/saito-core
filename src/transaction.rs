@@ -69,6 +69,10 @@ impl Transaction {
     pub fn add_from_slip(&mut self, slip: Slip) {
         self.body.from.push(slip)
     }
+
+    pub fn return_from_slips(&self) -> Vec<Slip> {
+        return self.body.from.clone();
+    }
 }
 
 impl Clone for TransactionBody {

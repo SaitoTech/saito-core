@@ -1,7 +1,6 @@
 use saito_core::block::Block;
 use saito_core::transaction::{Transaction};
 use saito_core::slip::Slip;
-use saito_core::crypto::generate_keys;
 use saito_core::blockchain::Blockchain;
 use saito_core::creator::Creator;
 use saito_core::wallet::Wallet;
@@ -9,18 +8,18 @@ use saito_core::shashmap::Shashmap;
 
 struct Saito {
     blockchain: Blockchain,
-    creator: Creator,
-    wallet: Wallet,
-    shashmap: Shashmap,
+    creator:    Creator,
+    wallet:     Wallet,
+    shashmap:   Shashmap,
 }
 
 impl Saito {
     pub fn new() -> Saito {
         return Saito {
             blockchain: Blockchain::new(),
-            creator: Creator::new(),
-            wallet: Wallet::new(),
-            shashmap: Shashmap::new(),
+            creator:    Creator::new(),
+            wallet:     Wallet::new(),
+            shashmap:   Shashmap::new(),
         }
     }
         

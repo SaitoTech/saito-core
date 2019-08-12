@@ -41,8 +41,8 @@ impl Creator {
         loop {
             // check how much work we have based on tx fees 
             if self.burn_fee_calc.return_current_burnfee() > self.work {
+                panic!("We have nothing to do here");
                 return;
-                panic!("We have nothign to do here");
             } else {
                 let one_second = time::Duration::from_millis(1000);
                 thread::sleep(one_second);

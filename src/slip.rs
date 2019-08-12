@@ -51,7 +51,7 @@ impl Slip {
             },
             lc: 0,
             is_valid: 0,
-            spent_status: SlipSpentStatus::Normal,
+            spent_status: SlipSpentStatus::Unspent,
         }
     }
 

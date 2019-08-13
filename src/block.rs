@@ -33,7 +33,6 @@ pub struct BlockBody {
 }
 
 
-
 impl BlockBody {
     pub fn new(block_creator: PublicKey) -> BlockBody {
         return BlockBody {
@@ -54,7 +53,9 @@ impl BlockBody {
     }
 }
 
+
 impl Block {
+
     pub fn new(creator: PublicKey) -> Block {
         return Block {
 	    body:      BlockBody::new(creator),
@@ -67,6 +68,10 @@ impl Block {
 
     pub fn add_transaction(&mut self, tx: Transaction) {
         self.body.txs.push(tx);
+    }
+
+    pub fn set_transactions(&mut self, transactions: &mut Vec<Transaction>) {
+        std::mem::swap(&mut self.body.txs, transactions);
     }
 
     pub fn return_block_hash(&self) -> [u8; 32] {

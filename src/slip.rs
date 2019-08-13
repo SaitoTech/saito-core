@@ -55,6 +55,14 @@ impl Slip {
         }
     }
 
+    pub fn set_amt(&mut self, amt: u64) {
+        self.body.amt = amt;
+    }
+
+    pub fn return_amt(&self) -> u64 {
+        return self.body.amt;
+    }
+
     // implication is slip type is immutable
     pub fn return_signature_source(&self) -> Vec<u8> {
        return bincode::serialize(&self.body).unwrap();

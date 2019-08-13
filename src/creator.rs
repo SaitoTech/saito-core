@@ -1,7 +1,7 @@
 use std::{thread, time};
 use crate::block::Block;
 use crate::transaction::Transaction;
-use crate::burnfee::BurnFeeCalculator;
+use crate::burnfee::BurnFee;
 use crate::wallet::Wallet;
 use crate::helper::create_timestamp;
 
@@ -11,7 +11,7 @@ use std::sync::mpsc::{Sender, Receiver};
 pub struct Creator {
     blocks: Vec<Block>,
     transactions: Vec<Transaction>,
-    burn_fee_calc: BurnFeeCalculator,
+    burnfee: BurnFee,
     work: u64,
 }
 
@@ -21,7 +21,7 @@ impl Creator {
         return Creator {
             blocks: vec![],
             transactions: vec![],
-            burn_fee_calc: BurnFeeCalculator::new(),
+            burnfee: BurnFee::new(0.0,0.0),
             work: 0,
         };
     }
@@ -55,7 +55,7 @@ impl Creator {
             }
 
 	    let ts = create_timestamp();
-            let work_needed = self.burn_fee_calc.return_work_needed(0, ts, 10_000_000_000);
+            let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);
 println!("WORK NEEDED: {:?}", work_needed);
 
             if work_needed <= self.work {

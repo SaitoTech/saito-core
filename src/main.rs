@@ -7,6 +7,9 @@ use saito_core::mempool::Mempool;
 use saito_core::wallet::Wallet;
 use saito_core::shashmap::Shashmap;
 
+use saito_core::network::Network;
+use saito_core::helper::create_timestamp;
+
 use std::cell::RefCell;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::{thread, time};
@@ -14,18 +17,13 @@ use std::{thread, time};
 
 
 struct Client {
-
     blockchain: Blockchain,
     mempool:    Mempool,
     wallet:     Wallet,
     shashmap:   Shashmap,
-
-
-
 }
 
 impl Client {
-
     pub fn new() -> Client{
         return Client {
             blockchain: Blockchain::new(),
@@ -41,7 +39,6 @@ impl Client {
         block_sender: Sender<Block>,
         block_receiver: Receiver<Block>
     ) {
-
         loop {
           self.mempool.bundle_block(&self.wallet, &tx_receiver, &block_sender);
           let block = block_receiver.recv().unwrap();
@@ -63,7 +60,6 @@ impl Client {
 
 
 fn main() {
-
     let (tx_sender, tx_receiver): (Sender<Transaction>, Receiver<Transaction>) = channel();
     let (block_sender, block_receiver): (Sender<Block>, Receiver<Block>) = channel();
 
@@ -78,18 +74,9 @@ fn main() {
         );
     });
 
-    loop {
-        let mut transaction: Transaction = Transaction::new();
-        let mut slip: Slip = Slip::new(publickey);
-    
-        slip.set_amt(200_000_000);
-        transaction.add_from_slip(slip);
-
-        let three_seconds = time::Duration::from_millis(3000);
-        thread::sleep(three_seconds);
-        
-        tx_sender.send(transaction).unwrap();
-    }
+    // dummy for incoming network functionality
+    let network = Network::new(tx_sender, publickey);
+    network.init();
 }
 
 

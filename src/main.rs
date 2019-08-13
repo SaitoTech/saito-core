@@ -1,82 +1,31 @@
-use saito_core::block::Block;
-use saito_core::transaction::{Transaction};
-use saito_core::slip::Slip;
-
-use saito_core::blockchain::Blockchain;
-use saito_core::mempool::Mempool;
-use saito_core::wallet::Wallet;
-use saito_core::shashmap::Shashmap;
+use saito_core::transaction::Transaction;
 
 use saito_core::network::Network;
-use saito_core::helper::create_timestamp;
+use saito_core::consensus::Consensus;
+use saito_core::runtime::Runtime;
 
-use std::cell::RefCell;
 use std::sync::mpsc::{channel, Sender, Receiver};
-use std::{thread, time};
-
-
-
-struct Client {
-    blockchain: Blockchain,
-    mempool:    Mempool,
-    wallet:     Wallet,
-    shashmap:   Shashmap,
-}
-
-impl Client {
-    pub fn new() -> Client{
-        return Client {
-            blockchain: Blockchain::new(),
-            mempool:    Mempool::new(),
-            wallet:     Wallet::new(),
-            shashmap:   Shashmap::new(),
-        }
-    }
-        
-    pub fn init(
-        &mut self,
-        tx_receiver: Receiver<Transaction>,
-        block_sender: Sender<Block>,
-        block_receiver: Receiver<Block>
-    ) {
-        loop {
-          self.mempool.bundle_block(&self.wallet, &tx_receiver, &block_sender);
-          let block = block_receiver.recv().unwrap();
-          self.add_block(block);
-        } 
-    }
-
-    pub fn add_block(&mut self, block: Block) {
-        self.blockchain.add_block(block);
-    }
-
-    pub fn validate_tx(&self, tx: Transaction, tx_sender: Sender<Transaction>) {
-        if true {
-            tx_sender.send(tx).unwrap();
-        }  
-    }
-}
-
-
+use std::thread;
 
 fn main() {
-    let (tx_sender, tx_receiver): (Sender<Transaction>, Receiver<Transaction>) = channel();
-    let (block_sender, block_receiver): (Sender<Block>, Receiver<Block>) = channel();
+    actix::System::run(|| {
+        let mut consensus = Consensus::new();
+        let network = Network::new();
+        let runtime = Runtime::new();
 
-    let client = RefCell::new(Client::new());
-    let publickey = client.borrow().wallet.return_publickey();
+        // exists in the meanwhile before rolling out more actix handlers  
+        let (tx_mempool_sender, tx_mempool_receiver): (Sender<Transaction>, Receiver<Transaction>) = channel();
 
-    thread::spawn(move || {
-        client.borrow_mut().init(
-            tx_receiver,
-            block_sender.clone(),
-            block_receiver,
-        );
+        let publickey = consensus.wallet.return_publickey();
+
+        thread::spawn(move || {
+            consensus.init(tx_mempool_receiver);
+        });
+
+        thread::spawn(move || {
+            network.init(tx_mempool_sender, publickey);
+        });
     });
-
-    // dummy for incoming network functionality
-    let network = Network::new(tx_sender, publickey);
-    network.init();
 }
 
 

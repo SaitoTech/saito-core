@@ -46,8 +46,7 @@ impl Mempool {
         &mut self, 
         wallet: &Wallet,
         rx: &Receiver<Transaction>,
-        block_sender: &Sender<Block>
-    ) {
+    ) -> Block {
         loop {
 
             // check how much work we have based on tx fees 
@@ -62,9 +61,9 @@ impl Mempool {
 		println!("WORK ADEQUATE: producing block");
                 let mut block = Block::new(wallet.return_publickey());
                 block.set_transactions(&mut self.transactions);
-                block_sender.send(block).unwrap();
+                //block_sender.send(block).unwrap();
                 self.clear_transactions();
-                return;
+                return block;
             } else {
                 let one_second = time::Duration::from_millis(1000);
                 thread::sleep(one_second);

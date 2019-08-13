@@ -6,23 +6,17 @@ use std::{thread, time};
 use std::sync::mpsc:: Sender;
 
 // dummy class to emulate transactions coming over the network
-pub struct Network {
-    transaction_to_mempool_sender: Sender<Transaction>,
-    publickey: PublicKey,
-}
+pub struct Network {}
 
 impl Network {
-    pub fn new(sender: Sender<Transaction>, publickey: PublicKey) -> Network {
-        return Network {
-            transaction_to_mempool_sender: sender,
-            publickey: publickey,
-        };
+    pub fn new() -> Network {
+        return Network {};
     }
 
-    pub fn init(&self) {
+    pub fn init(&self, sender: Sender<Transaction>, publickey: PublicKey) {
         loop {
             let mut transaction: Transaction = Transaction::new();
-            let mut slip: Slip = Slip::new(self.publickey);
+            let mut slip: Slip = Slip::new(publickey);
 
             slip.set_amt(200_000_000);
             transaction.add_from_slip(slip);
@@ -30,7 +24,7 @@ impl Network {
             let three_seconds = time::Duration::from_millis(3000);
             thread::sleep(three_seconds);
 
-            self.transaction_to_mempool_sender.send(transaction).unwrap();
+            sender.send(transaction).unwrap();
         }
     }
 }

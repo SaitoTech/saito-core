@@ -73,6 +73,13 @@ impl Transaction {
     pub fn return_from_slips(&self) -> Vec<Slip> {
         return self.body.from.clone();
     }
+
+    //
+    // TODO - calculate based on path information not 1
+    //
+    pub fn return_work_available(&self, publickey: &str) -> u64 {
+        return 1;
+    }
 }
 
 impl Clone for TransactionBody {

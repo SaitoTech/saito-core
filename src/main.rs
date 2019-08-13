@@ -3,7 +3,7 @@ use saito_core::transaction::{Transaction};
 use saito_core::slip::Slip;
 
 use saito_core::blockchain::Blockchain;
-use saito_core::creator::Creator;
+use saito_core::mempool::Mempool;
 use saito_core::wallet::Wallet;
 use saito_core::shashmap::Shashmap;
 
@@ -16,7 +16,7 @@ use std::{thread, time};
 struct Client {
 
     blockchain: Blockchain,
-    creator:    Creator,
+    mempool:    Mempool,
     wallet:     Wallet,
     shashmap:   Shashmap,
 
@@ -29,7 +29,7 @@ impl Client {
     pub fn new() -> Client{
         return Client {
             blockchain: Blockchain::new(),
-            creator:    Creator::new(),
+            mempool:    Mempool::new(),
             wallet:     Wallet::new(),
             shashmap:   Shashmap::new(),
         }
@@ -43,7 +43,7 @@ impl Client {
     ) {
 
         loop {
-          self.creator.bundle(&self.wallet, &tx_receiver, &block_sender);
+          self.mempool.bundle_block(&self.wallet, &tx_receiver, &block_sender);
           let block = block_receiver.recv().unwrap();
           self.add_block(block);
         } 

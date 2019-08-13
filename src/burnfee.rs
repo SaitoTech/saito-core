@@ -13,22 +13,30 @@ impl BurnFee {
     }
 }
 
+// burnfee references the work needed to produce a block
+// references
+//
+// work_available
+// work_needed
+// 
+// fees_total
+// fees_usable
+// fees_usable_to_block_creator
+//
+// fees_paid_to_lottery
+// fees_paid_to_block_creator
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct BurnFeeCalculator {
-    fee: u64,
+    fee: u64, 
     heartbeat: u32,
-    last_block_timestamp: u64,
-    last_block_delta: u64
 }
 
 impl BurnFeeCalculator {
     pub fn new() -> BurnFeeCalculator {
         return BurnFeeCalculator {
-            fee: 1_000_000_000,
+            fee: 1_000_000, 
             heartbeat: 10,
-            last_block_timestamp: create_timestamp(),
-            last_block_delta: 0
         }
     }
 
@@ -51,11 +59,9 @@ impl BurnFeeCalculator {
         return result;
     }
 
-    pub fn return_current_burnfee(&self) -> u64 {
-        return self.calculate(create_timestamp() - self.last_block_timestamp);
-    }
+    // return work needed
+    //
+    // validate work
 
-    pub fn set_last_block_timestamp(&mut self) {
-        self.last_block_timestamp = create_timestamp();
-    }
+    // need to adjust the current burnfee based on the previous blocks burnfee value
 }

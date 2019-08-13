@@ -7,6 +7,7 @@ pub mod hop;
 pub mod burnfee;
 pub mod wallet;
 pub mod shashmap;
+pub mod network;
 
 pub mod crypto;
 pub mod helper;

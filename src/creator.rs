@@ -3,6 +3,7 @@ use crate::block::Block;
 use crate::transaction::Transaction;
 use crate::burnfee::BurnFeeCalculator;
 use crate::wallet::Wallet;
+use crate::helper::create_timestamp;
 
 use std::sync::mpsc::{Sender, Receiver};
 
@@ -42,12 +43,12 @@ impl Creator {
     pub fn clear_tx_mempool(&mut self) {
         self.transactions = vec![];
         self.work = 0;
-        self.burn_fee_calc.set_last_block_timestamp();
     }
 
     pub fn bundle(
         &mut self, 
         wallet: &Wallet,
+        last_timestamp: u64,
         rx: &Receiver<Transaction>,
         block_sender: &Sender<Block>
     ) {
@@ -56,7 +57,8 @@ impl Creator {
             if let Ok(tx) = rx.try_recv() {
                 self.add_transaction(tx);
             }
-            let current_bf = self.burn_fee_calc.return_current_burnfee();
+            let elapsed_time = create_timestamp() - last_timestamp;
+            let current_bf = self.burn_fee_calc.calculate(elapsed_time);
 
             if current_bf <= self.work {
                 let mut block = Block::new(wallet.return_publickey());

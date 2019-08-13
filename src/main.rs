@@ -14,20 +14,22 @@ use std::cell::RefCell;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::{thread, time};
 
+
+
 struct Client {
     blockchain: Blockchain,
-    creator: Creator,
-    wallet: Wallet,
-    shashmap: Shashmap,
+    creator:    Creator,
+    wallet:     Wallet,
+    shashmap:   Shashmap,
 }
 
 impl Client {
     pub fn new() -> Client{
         return Client {
             blockchain: Blockchain::new(),
-            creator: Creator::new(),
-            wallet: Wallet::new(),
-            shashmap: Shashmap::new(),
+            creator:    Creator::new(),
+            wallet:     Wallet::new(),
+            shashmap:   Shashmap::new(),
         }
     }
         
@@ -38,10 +40,9 @@ impl Client {
         block_receiver: Receiver<Block>
     ) {
         loop {
-        self.creator.bundle(&self.wallet, create_timestamp(), &tx_receiver, &block_sender);
-        let block = block_receiver.recv().unwrap() ;
-
-        self.add_block(block);
+          self.creator.bundle(&self.wallet, &tx_receiver, &block_sender);
+          let block = block_receiver.recv().unwrap();
+          self.add_block(block);
         } 
     }
 
@@ -55,6 +56,8 @@ impl Client {
         }  
     }
 }
+
+
 
 fn main() {
     let (tx_sender, tx_receiver): (Sender<Transaction>, Receiver<Transaction>) = channel();

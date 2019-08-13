@@ -33,7 +33,6 @@ pub struct BlockBody {
 }
 
 
-
 impl BlockBody {
     pub fn new(block_creator: PublicKey) -> BlockBody {
         return BlockBody {
@@ -54,7 +53,9 @@ impl BlockBody {
     }
 }
 
+
 impl Block {
+
     pub fn new(creator: PublicKey) -> Block {
         return Block {
 	    body:      BlockBody::new(creator),

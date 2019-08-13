@@ -1,7 +1,7 @@
 use std::{thread, time};
 use crate::block::Block;
 use crate::transaction::Transaction;
-use crate::burnfee::BurnFeeCalculator;
+use crate::burnfee::BurnFee;
 use crate::wallet::Wallet;
 use crate::helper::create_timestamp;
 
@@ -11,16 +11,17 @@ use std::sync::mpsc::{Sender, Receiver};
 pub struct Creator {
     blocks: Vec<Block>,
     transactions: Vec<Transaction>,
-    burn_fee_calc: BurnFeeCalculator,
+    burnfee: BurnFee,
     work: u64,
 }
 
 impl Creator {
+
     pub fn new() -> Creator {
         return Creator {
             blocks: vec![],
             transactions: vec![],
-            burn_fee_calc: BurnFeeCalculator::new(),
+            burnfee: BurnFee::new(0.0,0.0),
             work: 0,
         };
     }
@@ -36,10 +37,6 @@ impl Creator {
         self.transactions.push(tx.clone());
     }
 
-    pub fn return_transaction_length(&self) -> u32 {
-        return self.transactions.len() as u32;
-    }
-
     pub fn clear_tx_mempool(&mut self) {
         self.transactions = vec![];
         self.work = 0;
@@ -48,7 +45,6 @@ impl Creator {
     pub fn bundle(
         &mut self, 
         wallet: &Wallet,
-        last_timestamp: u64,
         rx: &Receiver<Transaction>,
         block_sender: &Sender<Block>
     ) {
@@ -57,26 +53,24 @@ impl Creator {
             if let Ok(tx) = rx.try_recv() {
                 self.add_transaction(tx);
             }
-            let elapsed_time = create_timestamp() - last_timestamp;
-            let current_bf = self.burn_fee_calc.calculate(elapsed_time);
 
-            if current_bf <= self.work {
+	    let ts = create_timestamp();
+            let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);
+
+            if work_needed <= self.work {
                 let mut block = Block::new(wallet.return_publickey());
-                //for tx in self.transactions.iter_mut() {
-                //    block.add_transaction(tx);
-                //}
                 block.set_transactions(&mut self.transactions);
                 println!("SENDING BLOCK");
                 block_sender.send(block).unwrap();
-                
                 self.clear_tx_mempool();
                 return;
             } else {
                 let one_second = time::Duration::from_millis(1000);
                 thread::sleep(one_second);
-                println!("{:.8} -- {:.8}", self.work, current_bf);
-                println!("\n\n");
+                //println!("{:.8} -- {:.8}", self.work, current_bf);
+                //println!("\n\n");
             }
         }
     }
 }
+

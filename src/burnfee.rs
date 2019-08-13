@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use crate::helper::create_timestamp;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct BurnFee {
@@ -8,60 +7,39 @@ pub struct BurnFee {
 }
 
 impl BurnFee {
+    /// Returns the BurnFee used to calculate the work needed to produce a block
+    ///
+    /// * `start` - y-value at x = 0
+    /// * `current` - y-value at x = 0 for next bloc
     pub fn new(start: f32, current: f32) -> BurnFee {
-        return BurnFee { start, current };
-    }
-}
-
-// burnfee references the work needed to produce a block
-// references
-//
-// work_available
-// work_needed
-// 
-// fees_total
-// fees_usable
-// fees_usable_to_block_creator
-//
-// fees_paid_to_lottery
-// fees_paid_to_block_creator
-
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-pub struct BurnFeeCalculator {
-    fee: u64, 
-    heartbeat: u32,
-}
-
-impl BurnFeeCalculator {
-    pub fn new() -> BurnFeeCalculator {
-        return BurnFeeCalculator {
-            fee: 1_000_000, 
-            heartbeat: 10,
-        }
+        return BurnFee {
+	    start, 
+	    current 
+	};
     }
 
-    pub fn calculate(&self, mut elapsed_time: u64) -> u64 {
-        let elapsed_time_float = elapsed_time as f64 / 1000.0;
-        let double_heart_beat_float = self.heartbeat as f64 * 2.0;
 
-        if elapsed_time_float > double_heart_beat_float { return 0; }
+    /// returns the amount of work needed to produce a block given the timestamp of
+    /// the previous block, the current timestamp, and the y-axis of the burn fee
+    /// curve. This is used both in the creation of blocks (mempool) as well as 
+    /// during block validation.
+    ///
+    /// * `prevts` - timestamp of previous block
+    /// * `ts`     - candidate timestamp
+    /// * `start`  - burn fee value (y-axis) for curve determination ("start")
+    ///
+    pub fn return_work_needed(&mut self, prevts: u64, ts: u64, start: u64, heartbeat: u64) -> u64 {
 
-        println!("ELAPSED TIME IN SECONDS {}", elapsed_time_float);
-
+	let mut elapsed_time = ts - prevts;
         if elapsed_time == 0 { elapsed_time = 1; }
+        if elapsed_time > (2000 * heartbeat) { return 0; }
 
-        let elapsed_time_float = elapsed_time as f64;
-        let fee_float: f64 = self.fee as f64 * 1000 as f64;
-        let calculation =  fee_float / elapsed_time_float;
+        let elapsed_time_float     = elapsed_time as f64;
+        let start_float            = start as f64;
+        let work_needed_float: f64 = start_float / elapsed_time_float; 
 
-        let result = calculation.round() as u64;
+	return work_needed_float.round() as u64;
 
-        return result;
     }
-
-    // return work needed
-    //
-    // validate work
-
-    // need to adjust the current burnfee based on the previous blocks burnfee value
 }
+

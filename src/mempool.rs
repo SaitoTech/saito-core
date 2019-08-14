@@ -40,25 +40,26 @@ impl Mempool {
     }
 
 
-    pub fn bundle_block (&mut self, wallet: &Wallet) -> Block {
-        loop {
-            // check how much work we have based on tx fees 
-	    let ts = create_timestamp();
-            let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);
-
-            if work_needed <= self.work_available {
-		println!("WORK ADEQUATE: producing block");
-                
-                let mut block = Block::new(wallet.return_publickey());
-                block.set_transactions(&mut self.transactions);
-                
-                self.clear_transactions();
-                return block;
-            } else {
-                let one_second = time::Duration::from_millis(1000);
-                thread::sleep(one_second);
-            }
+    //
+    // TODO
+    //
+    // use blockchain data in RETURN_WORK_NEEDED call
+    //
+    pub fn can_bundle_block (&mut self, wallet: &Wallet) -> bool {
+	let ts = create_timestamp();
+        let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);
+        if work_needed <= self.work_available {
+	    return true;
         }
+	return false;
+    }
+
+
+    pub fn bundle_block (&mut self, wallet: &Wallet) -> Option<Block> {
+        let mut block = Block::new(wallet.return_publickey());
+        block.set_transactions(&mut self.transactions);
+        self.clear_transactions();
+	return Some(block);
     }
 
 }

@@ -3,6 +3,7 @@ use crate::mempool::Mempool;
 use crate::wallet::Wallet;
 use crate::shashmap::Shashmap;
 use crate::network::NetworkMessage;
+use crate::block::Block;
 
 use actix::*;
 
@@ -27,9 +28,21 @@ impl Consensus {
         
     pub fn init(&mut self ) {
         loop {
-          let block = self.mempool.bundle_block(&self.wallet);
-          self.blockchain.add_block(block);
+
+            if self.mempool.can_bundle_block(&self.wallet) {
+
+                let block = self.mempool.bundle_block(&self.wallet);
+		match block {
+		    Some(block) => {
+                        self.blockchain.add_block(block);
+		    },
+		    None => {
+		    },
+		}	
+
+	    }
         } 
+
     }
 }
 

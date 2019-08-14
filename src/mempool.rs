@@ -5,10 +5,8 @@ use crate::burnfee::BurnFee;
 use crate::wallet::Wallet;
 use crate::helper::create_timestamp;
 
-use std::sync::mpsc::{Sender, Receiver};
 
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Mempool {
     blocks: Vec<Block>,
     transactions: Vec<Transaction>,
@@ -42,17 +40,12 @@ impl Mempool {
     }
 
 
-    pub fn bundle_block (
-        &mut self, 
-        wallet: &Wallet,
-        rx: &Receiver<Transaction>,
-    ) -> Block {
+    pub fn bundle_block (&mut self, wallet: &Wallet) -> Block {
         loop {
-
             // check how much work we have based on tx fees 
-            if let Ok(tx) = rx.try_recv() {
-                self.add_transaction(tx);
-            }
+            //if let Ok(tx) = rx.try_recv() {
+            //    self.add_transaction(tx);
+            //}
 
 	    let ts = create_timestamp();
             let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);

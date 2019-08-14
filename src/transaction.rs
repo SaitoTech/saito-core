@@ -4,6 +4,8 @@ use crate::slip::{Slip};
 use crate::helper::{create_timestamp};
 use crate::crypto::{Signature};
 
+use actix::prelude::*;
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum TransactionBroadcastType {
   Normal,
@@ -28,7 +30,7 @@ pub struct TransactionBody {
     ps:   u8,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Message)]
 pub struct Transaction {
 
     body: TransactionBody,

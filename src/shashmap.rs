@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 
+#[derive(Clone)]
 pub struct Shashmap {
     // might want i32 as to include the negative numbers for unspent tx to 
     hashmap: HashMap<Vec<u8>, u32>,

@@ -7,25 +7,44 @@ use saito_core::runtime::Runtime;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::thread;
 
+use actix::*;
+
 fn main() {
-    actix::System::run(|| {
-        let mut consensus = Consensus::new();
-        let network = Network::new();
-        let runtime = Runtime::new();
+    let system = System::new("SAITO");
 
-        // exists in the meanwhile before rolling out more actix handlers  
-        let (tx_mempool_sender, tx_mempool_receiver): (Sender<Transaction>, Receiver<Transaction>) = channel();
+    let mut consensus = Consensus::new();
+    let consensus_addr = consensus.clone().start();
+    let network = Network { consensus_addr };
 
-        let publickey = consensus.wallet.return_publickey();
+    let runtime = Runtime::new();
 
-        thread::spawn(move || {
-            consensus.init(tx_mempool_receiver);
-        });
+    let publickey = consensus.wallet.return_publickey();
 
-        thread::spawn(move || {
-            network.init(tx_mempool_sender, publickey);
-        });
+    thread::spawn(move || {
+        consensus.init();
     });
+
+    thread::spawn(move || {
+        network.init(publickey);
+    });
+
+    system.run();
+
+
+    // Network
+    // - has Consensus Addr
+    // - has Runtime Addr
+    // - NetworkManager 
+    //
+    // Consensus
+    // - has Runtime Addr
+    // - has Network Addr
+    //
+    // Runtime
+    //  - Consensus Addr
+    //  - has Network Addr
+    //
+    // and the runtime addr to consensus
 }
 
 

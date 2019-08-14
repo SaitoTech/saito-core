@@ -2,7 +2,6 @@ use crate::blockchain::Blockchain;
 use crate::mempool::Mempool;
 use crate::wallet::Wallet;
 use crate::shashmap::Shashmap;
-
 use crate::network::NetworkMessage;
 
 use actix::*;
@@ -15,30 +14,6 @@ pub struct Consensus {
     shashmap:   Shashmap,
 }
 
-// Consensus implements the Actor trait 
-// which is given an actix Context containing its Addr 
-impl Actor for Consensus {
-    type Context = Context<Self>;
-}
-
-// Consensus implements a Handler trait which allows it to receive NetworkMessages
-
-// It uses a match control flow which runs either add_block or add_transaction depending on the
-// NetworkMessage payload
-impl Handler<NetworkMessage> for Consensus {
-    type Result = ();
-
-    fn handle(&mut self, msg: NetworkMessage, _: &mut Context<Self>) {
-        match msg {
-            NetworkMessage::IncomingBlock(blk) => {
-                self.blockchain.add_block(blk);
-            },
-            NetworkMessage::IncomingTransaction(tx) => {
-                self.mempool.add_transaction(tx);
-            },
-        }
-    }
-}
 
 impl Consensus {
     pub fn new() -> Consensus {
@@ -57,4 +32,33 @@ impl Consensus {
         } 
     }
 }
+
+
+
+//
+// Consensus implements the Actor trait 
+//
+impl Actor for Consensus {
+    type Context = Context<Self>;
+}
+
+//
+// Actix Handlers
+//
+// NETWORK MESSAGES
+//
+impl Handler<NetworkMessage> for Consensus {
+    type Result = ();
+    fn handle(&mut self, msg: NetworkMessage, _: &mut Context<Self>) {
+        match msg {
+            NetworkMessage::IncomingBlock(blk) => {
+                self.blockchain.add_block(blk);
+            },
+            NetworkMessage::IncomingTransaction(tx) => {
+                self.mempool.add_transaction(tx);
+            },
+        }
+    }
+}
+
 

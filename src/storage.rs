@@ -24,7 +24,7 @@ impl Storage {
  
         filename.push_str(&create_timestamp().to_string());
         filename.push_str(&"-");
-        filename.push_str(str::from_utf8(&blk.return_block_hash()).unwrap());
+        filename.push_str(str::from_utf8(&blk.return_bsh()).unwrap());
         filename.push_str(&".sai");
 
         let encode: Vec<u8> = bincode::serialize(blk.return_body()).unwrap();

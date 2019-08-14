@@ -30,7 +30,7 @@ fn main() {
         network.init(publickey);
     });
 
-    system.run();
+    system.run().unwrap();
 
     // Network
     // - has Consensus Addr

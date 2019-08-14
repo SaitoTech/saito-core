@@ -74,6 +74,10 @@ impl Block {
         std::mem::swap(&mut self.body.txs, transactions);
     }
 
+    pub fn return_body(&self) -> &BlockBody {
+        return &self.body;
+    }
+
     pub fn return_block_hash(&self) -> [u8; 32] {
 
         let mut data: Vec<u8> = vec![];

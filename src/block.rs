@@ -7,7 +7,7 @@ use crate::burnfee::BurnFee;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
-    body:     BlockBody,
+    pub body:     BlockBody,
     is_valid: u8,
     mintid:   u32,
     maxtid:   u32,
@@ -19,11 +19,11 @@ pub struct Block {
 pub struct BlockBody {
     pub id:          u32,
     pub ts:          u64,
-    prevhash:        [u8; 32],
-    merkle:          [u8; 32],
+    pub prevbsh:     [u8; 32],
     pub creator:     PublicKey,
     pub txs:         Vec<Transaction>,
-    bf:		     BurnFee,
+    pub bf:	     BurnFee,
+    merkle:          [u8; 32],
     difficulty:      f32,
     paysplit:        f32,
     vote:            i8,
@@ -38,7 +38,7 @@ impl BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          create_timestamp(),
-    	    prevhash:    [0; 32],
+    	    prevbsh:     [0; 32],
     	    merkle:      [0; 32],
     	    creator:     block_creator,
     	    txs:         vec![],
@@ -74,7 +74,7 @@ impl Block {
         std::mem::swap(&mut self.body.txs, transactions);
     }
 
-    pub fn return_block_hash(&self) -> [u8; 32] {
+    pub fn return_bsh(&self) -> [u8; 32] {
 
         let mut data: Vec<u8> = vec![];
 

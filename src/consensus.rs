@@ -29,12 +29,12 @@ impl Consensus {
     pub fn init(&mut self ) {
         loop {
 
-            if self.mempool.can_bundle_block(&self.wallet) {
+            if self.mempool.can_bundle_block(&self.wallet, &self.blockchain) {
 
-                let block = self.mempool.bundle_block(&self.wallet);
-		match block {
-		    Some(block) => {
-                        self.blockchain.add_block(block);
+                let blk = self.mempool.bundle_block(&self.wallet);
+		match blk {
+		    Some(blk) => {
+                        self.blockchain.add_block(blk);
 		    },
 		    None => {
 		    },

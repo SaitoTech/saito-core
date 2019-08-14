@@ -1,4 +1,5 @@
 use std::{thread, time};
+use crate::blockchain::Blockchain;
 use crate::block::Block;
 use crate::transaction::Transaction;
 use crate::burnfee::BurnFee;
@@ -45,9 +46,9 @@ impl Mempool {
     //
     // use blockchain data in RETURN_WORK_NEEDED call
     //
-    pub fn can_bundle_block (&mut self, wallet: &Wallet) -> bool {
+    pub fn can_bundle_block (&mut self, wallet: &Wallet, blockchain: &Blockchain) -> bool {
 	let ts = create_timestamp();
-        let work_needed = self.burnfee.return_work_needed(0, ts, 10_000_000_000, 100_000);
+        let work_needed = self.burnfee.return_work_needed(0, ts, blockchain.return_latest_bf_current(), blockchain.return_heartbeat());
         if work_needed <= self.work_available {
 	    return true;
         }

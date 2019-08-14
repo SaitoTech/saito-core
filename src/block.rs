@@ -5,9 +5,7 @@ use crate::helper::{create_timestamp};
 use crate::transaction::Transaction;
 use crate::burnfee::BurnFee;
 
-use actix::*;
-
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Message)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
     body:     BlockBody,
     is_valid: u8,

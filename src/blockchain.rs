@@ -194,7 +194,7 @@ impl Blockchain {
 	// identify longest chain
 	//
 	let mut i_am_the_longest_chain : u8 = 0;
-        let mut shared_ancestor_pos : i32 = -1;
+        let mut shared_ancestor_pos : usize = 0;
 
 
 
@@ -250,7 +250,7 @@ impl Blockchain {
 	                search_ts         = self.index.blocks[search_pos].body.ts;
           	        search_bf         = self.index.blocks[search_pos].body.bf.current;
           	        search_bsh        = self.index.blocks[search_pos].return_bsh();
-          	        search_prevhash   = self.index.prevhash[search_pos].body.prevbsh;
+          	        search_prevbsh    = self.index.blocks[search_pos].body.prevbsh;
 
 			//
 			// we find the common ancestor
@@ -271,7 +271,7 @@ impl Blockchain {
             		    }
             
             		    if (search_bsh == nchain_prevbsh) {
-            		        nchain_prevbsh = this.index.blocks[search_pos].body.prevbsh;
+            		        nchain_prevbsh = self.index.blocks[search_pos].body.prevbsh;
             		        nchain_len = nchain_len + 1; 
             		        nchain_bf = nchain_bf + self.index.blocks[search_pos].body.bf.current;
             		    }
@@ -283,7 +283,7 @@ impl Blockchain {
             		    // new chain completely disconnected
             		    // 
             		    if (shared_ancestor_pos == 1) {
-            		        if (nchain_prevbsh == "") {
+            		        if assert_eq!(b"", nchain_prevbsh) {
 				    //
 				    // add the block, and escape from this
 				    //
@@ -294,7 +294,7 @@ impl Blockchain {
             		    } 
 
             		    if (shared_ancestor_pos == 0) {
-            		        if (nchain_prevbsh != lchain_prevbsh) {
+            		        if assert_eq!(lchain_prevbsh, nchain_prevbsh) {
 				    //
 				    // add the block, and escape from this
 				    //

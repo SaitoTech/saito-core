@@ -1,6 +1,7 @@
 use std::path::Path;
 use std::fs::{File};
 use std::io::prelude::*;
+use std::str;
 
 use saito_primitives::block::Block;
 use saito_primitives::helper::create_timestamp;

@@ -16,7 +16,6 @@ pub struct Mempool {
 }
 
 impl Mempool {
-
     pub fn new() -> Mempool {
         return Mempool {
             blocks: vec![],
@@ -55,13 +54,11 @@ impl Mempool {
 	return false;
     }
 
-
     pub fn bundle_block (&mut self, wallet: &Wallet) -> Option<Block> {
         let mut block = Block::new(wallet.return_publickey());
         block.set_transactions(&mut self.transactions);
         self.clear_transactions();
 	return Some(block);
     }
-
 }
 

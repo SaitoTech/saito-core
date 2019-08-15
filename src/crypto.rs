@@ -6,6 +6,13 @@ pub use secp256k1::{Secp256k1, Message, Signature, SecretKey, PublicKey};
 pub use rand::{Rng, thread_rng};
 pub use base58::{ToBase58};
 
+use serde::{Serialize, Deserialize};
+
+#[derive( Serialize, Deserialize, Debug)]
+pub struct ReadablePublicKey(pub String);
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReadablePrivateKey(pub String);
 
 pub fn generate_keys() -> (SecretKey, PublicKey) {
     let secp = Secp256k1::new();

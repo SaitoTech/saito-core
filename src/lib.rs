@@ -5,6 +5,7 @@ pub mod hop;
 pub mod burnfee;
 pub mod blockchain;
 pub mod storage;
+pub mod config;
 pub mod mempool;
 pub mod wallet;
 pub mod shashmap;

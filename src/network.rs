@@ -15,8 +15,29 @@ pub struct Network {
     pub consensus_addr: Addr<Consensus>
 }
 
-impl Network {
+//
+// Implementing Actor trait for Network 
+//
+impl Actor for Network {
+    type Context = Context<Network>;
+} 
 
+//
+// Actix Message for sending data to Consensus
+// 
+#[derive(Message)]
+pub enum NetworkMessage {
+    IncomingBlock(Block),
+    IncomingTransaction(Transaction),
+}
+
+#[derive(Debug)]
+pub enum NetworkRequest {
+    Block,
+    Transaction
+}
+
+impl Network {
     pub fn init(&self, publickey: PublicKey) {
         let request = NetworkRequest::Block;
         loop {
@@ -45,25 +66,4 @@ impl Network {
 
 }
 
-//
-// Implementing Actor trait for Network 
-//
-impl Actor for Network {
-    type Context = Context<Network>;
-} 
-
-//
-// Actix Message for sending data to Consensus
-// 
-#[derive(Message)]
-pub enum NetworkMessage {
-    IncomingBlock(Block),
-    IncomingTransaction(Transaction),
-}
-
-#[derive(Debug)]
-pub enum NetworkRequest {
-    Block,
-    Transaction
-}
 

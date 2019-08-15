@@ -1,10 +1,11 @@
-use crate::transaction::Transaction;
-use crate::slip::Slip;
-use crate::block::Block;
-use crate::crypto::PublicKey;
-use crate::consensus::Consensus;
-
 use std::{thread, time};
+
+use saito_primitives::slip::Slip;
+use saito_primitives::block::Block;
+use saito_primitives::crypto::PublicKey;
+use saito_primitives::transaction::Transaction;
+
+use crate::consensus::Consensus;
 
 use actix::*;
 

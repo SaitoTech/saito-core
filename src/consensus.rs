@@ -3,7 +3,8 @@ use crate::mempool::Mempool;
 use crate::wallet::Wallet;
 use crate::shashmap::Shashmap;
 use crate::network::NetworkMessage;
-use crate::block::Block;
+
+use saito_primitives::block::Block;
 
 use actix::*;
 

@@ -28,7 +28,7 @@ impl BurnFee {
     /// * `ts`     - candidate timestamp
     /// * `start`  - burn fee value (y-axis) for curve determination ("start")
     ///
-    pub fn return_work_needed(&mut self, prevts: u64, ts: u64, start: u64, heartbeat: u64) -> u64 {
+    pub fn return_work_needed(&mut self, prevts: u64, ts: u64, start: f32, heartbeat: u64) -> u64 {
 
 	let mut elapsed_time = ts - prevts;
         if elapsed_time == 0 { elapsed_time = 1; }
@@ -37,8 +37,9 @@ impl BurnFee {
         let elapsed_time_float     = elapsed_time as f64;
         let start_float            = start as f64;
         let work_needed_float: f64 = start_float / elapsed_time_float; 
+	let work_needed		   = work_needed_float * 100_000_000.0;
 
-	return work_needed_float.round() as u64;
+	return work_needed.round() as u64;
 
     }
 }

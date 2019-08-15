@@ -9,7 +9,7 @@ use crate::burnfee::BurnFee;
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Block {
     pub body:     BlockBody,
-    is_valid: u8,
+    pub is_valid: u8,
     mintid:   u32,
     maxtid:   u32,
     bsh:      [u8; 32],

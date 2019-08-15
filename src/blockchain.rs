@@ -21,11 +21,13 @@ pub struct Blockchain {
     lc_pos_set:     bool,
     lc_pos:         usize,				// pos of lc
 
-
     genesis_ts:	    u64,
     genesis_bid:    u32,
     genesis_period: u32,
 
+    last_bsh:			[u8; 32],
+    last_bid:			u32,
+    last_ts:			u64,
 
     lowest_acceptable_ts:	u64,
     lowest_acceptable_bsh:	[u8; 32],
@@ -47,6 +49,10 @@ impl Blockchain {
 	    genesis_ts:	    	   0,
 	    genesis_bid:    	   0,
 	    genesis_period: 	   0,
+
+	    last_bsh:		   [0; 32],
+	    last_bid:		   0,
+	    last_ts:		   0,
 
 	    lowest_acceptable_ts:  0,
 	    lowest_acceptable_bsh: [0; 32],
@@ -176,7 +182,7 @@ impl Blockchain {
 	//
 	// insert indexes
 	//
-	let pos = self.index.blocks.len();
+	let pos :usize = self.index.blocks.len();
         self.index.blocks.insert(pos, blk);
         self.bsh_lc_hmap.insert(blk.return_bsh(), 1);
         self.bsh_bid_hmap.insert(blk.return_bsh(), blk.body.id);
@@ -186,17 +192,132 @@ impl Blockchain {
 	//
 	// identify longest chain
 	//
-	self.lc_pos = pos;
-	self.lc_pos_set = true;
-
-
 	let mut i_am_the_longest_chain : u8 = 0;
         let mut shared_ancestor_pos : i32 = -1;
 
 
+
+	if self.index.blocks.len() == 1 {
+	
+    	    //
+    	    // starting point
+    	    //
+    	    if self.last_bid > 0 {
+      		if blk.body.prevbsh == self.last_bsh {
+       		    i_am_the_longest_chain = 1;
+      		}
+    	    } else {
+      		i_am_the_longest_chain = 1;
+    	    }
+
+	} else {
+
+	    if blk.body.id >= self.index.blocks[self.lc_pos].body.id {
+  
+    		if blk.body.prevbsh == self.index.blocks[self.lc_pos].return_bsh() {
+        	    i_am_the_longest_chain = 1;
+      		} else {
+
+		    //
+        	    // find the last shared ancestor
+        	    //
+        	    let lchain_pos       :usize   = self.lc_pos;
+        	    let nchain_pos       :usize   = pos;
+        	    let lchain_len       :u32     = 0;
+        	    let nchain_len       :u32     = 0;
+        	    let lchain_bf        :f32     = self.index.blocks[lchain_pos].body.bf.current;
+        	    let nchain_bf        :f32     = self.index.blocks[nchain_pos].body.bf.current;
+        	    let lchain_ts        :u64     = self.index.blocks[lchain_pos].body.ts;
+        	    let nchain_ts        :u64     = self.index.blocks[nchain_pos].body.ts;
+        	    let lchain_prevbsh   :[u8;32] = self.index.blocks[lchain_pos].body.prevbsh;
+        	    let nchain_prevbsh   :[u8;32] = self.index.blocks[nchain_pos].body.prevbsh;
+	            let search_pos       :usize   = 0;
+        	    let search_bf        :f32  	  = 0.0;
+        	    let search_ts        :u64     = 0;
+        	    let search_bsh       :[u8;32] = [0;32];
+        	    let search_prevbsh   :[u8;32] = [0;32];
+		    let search_completed :bool    = false;
+
+	            if nchain_ts >= lchain_ts {
+	                search_pos = nchain_pos - 1;
+        	    } else {
+          	        search_pos = lchain_pos - 1;
+         	    }
+
+		    while search_pos >= 0 && search_completed == false {
+
+	                search_ts         = self.index.blocks[search_pos].body.ts;
+          	        search_bf         = self.index.blocks[search_pos].body.bf.current;
+          	        search_bsh        = self.index.blocks[search_pos].return_bsh();
+          	        search_prevhash   = self.index.prevhash[search_pos].body.prevbsh;
+
+			//
+			// we find the common ancestor
+			//
+		        if search_bsh == lchain_prevbsh && search_bsh == nchain_prevbsh {
+			    shared_ancestor_pos = search_pos;
+			    search_completed = true;
+
+			//
+			// or we keep looking
+			//
+			} else {
+
+            		    if (search_bsh == lchain_prevbsh) {
+            		        lchain_len = lchain_len + 1; 
+            		        lchain_prevbsh = self.index.blocks[search_pos].body.prevbsh;
+            		        lchain_bf = lchain_bf + self.index.blocks[search_pos].body.bf.current;
+            		    }
+            
+            		    if (search_bsh == nchain_prevbsh) {
+            		        nchain_prevbsh = this.index.blocks[search_pos].body.prevbsh;
+            		        nchain_len = nchain_len + 1; 
+            		        nchain_bf = nchain_bf + self.index.blocks[search_pos].body.bf.current;
+            		    }
+            
+            		    shared_ancestor_pos = search_pos;
+            		    search_pos = search_pos - 1;
+            
+            		    //
+            		    // new chain completely disconnected
+            		    // 
+            		    if (shared_ancestor_pos == 1) {
+            		        if (nchain_prevbsh == "") {
+				    //
+				    // add the block, and escape from this
+				    //
+            		            //await this.addBlockToBlockchainSuccess(newblock, pos, 0);
+				    println!("blockchain - block disconnected from chain");
+            		            return;
+            		        } 
+            		    } 
+
+            		    if (shared_ancestor_pos == 0) {
+            		        if (nchain_prevbsh != lchain_prevbsh) {
+				    //
+				    // add the block, and escape from this
+				    //
+            		            //await this.addBlockToBlockchainSuccess(newblock, pos, 0);
+				    println!("blockchain - block disconnected from chain");
+            		            return;
+            		        } 
+            		    } 
+
+   		        }
+		    }
+	    	}
+	    }
+	}
+
+
+
+
+	self.lc_pos = pos;
+	self.lc_pos_set = true;
+
 	println!("Adding block: {:?}", self.return_latest_bsh()); 
 	println!("lc: {:?}", i_am_the_longest_chain);
-        println!("ancestor: {:?}", shared_ancestor_position);
+        println!("ancestor: {:?}", shared_ancestor_pos);
 
     }
 

@@ -3,16 +3,12 @@ use std::fs::{File};
 use std::io::prelude::*;
 use std::str;
 
-use crate::block::Block;
-use crate::helper::create_timestamp;
-use crate::config::Config;
-
-pub const CONFIG_FILENAME: &String= "config.json";
+use saito_primitives::block::Block;
+use saito_primitives::helper::create_timestamp;
 
 pub struct Storage {
     pub dest: String,
     pub blocks_dir: String,
-    pub config: Config,
 }
 
 impl Storage {
@@ -20,7 +16,6 @@ impl Storage {
         return Storage {
             dest: String::from("data"),
             blocks_dir: String::from("./data/blocks"),
-            config: Config::read_from_file(Path::new(CONFIG_FILENAME)),
         }
     }
 

@@ -1,15 +1,9 @@
 use serde::{Serialize, Deserialize};
-use crate::slip::Slip;
 use std::collections::HashMap;
-use crate::crypto::generate_keys;
-use crate::transaction::Transaction;
 
-
-//
-// SECRETKEY and PUBLICKEY ? referencing here? or just fetching from the cryptoclass?
-//
-use secp256k1::{SecretKey, PublicKey};
-
+use saito_primitives::slip::Slip;
+use saito_primitives::transaction::Transaction;
+use saito_primitives::crypto::{SecretKey, PublicKey, generate_keys};
 
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
@@ -30,9 +24,6 @@ pub struct WalletBody {
     pending:     Vec<Transaction>,
 }
 
-
-
-
 impl Wallet {
     pub fn new() -> Wallet {
         return Wallet {
@@ -45,14 +36,11 @@ impl Wallet {
     pub fn return_publickey(&self) -> PublicKey {
         return self.body.publickey;
     }
-
 }
 
 impl WalletBody {
     pub fn new() -> WalletBody {
-
         let (_privatekey, _publickey) = generate_keys();
-
         return WalletBody {
             balance:     0,
             privatekey:  _privatekey,

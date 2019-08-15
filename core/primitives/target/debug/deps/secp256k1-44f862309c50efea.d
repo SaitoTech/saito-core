@@ -1,0 +1,12 @@
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/secp256k1-44f862309c50efea.rmeta: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/macros.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/constants.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ecdh.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ffi.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/key.rs
+
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/libsecp256k1-44f862309c50efea.rlib: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/macros.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/constants.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ecdh.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ffi.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/key.rs
+
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/secp256k1-44f862309c50efea.d: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/macros.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/constants.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ecdh.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ffi.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/key.rs
+
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/lib.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/macros.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/constants.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ecdh.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/ffi.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/secp256k1-0.12.2/src/key.rs:

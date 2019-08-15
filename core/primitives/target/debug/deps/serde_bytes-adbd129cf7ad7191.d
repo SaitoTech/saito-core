@@ -1,0 +1,11 @@
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/serde_bytes-adbd129cf7ad7191.rmeta: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytes.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/de.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/ser.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytebuf.rs
+
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/libserde_bytes-adbd129cf7ad7191.rlib: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytes.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/de.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/ser.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytebuf.rs
+
+/Users/stephen/Code/rust/saito-core/core/primitives/target/debug/deps/serde_bytes-adbd129cf7ad7191.d: /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/lib.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytes.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/de.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/ser.rs /Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytebuf.rs
+
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/lib.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytes.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/de.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/ser.rs:
+/Users/stephen/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_bytes-0.11.2/src/bytebuf.rs:

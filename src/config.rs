@@ -3,8 +3,9 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
 use serde::{Serialize, Deserialize};
-use crate::crypto::{ReadablePublicKey, ReadablePrivateKey};
-use crate::slip:: Slip;
+
+use saito_primitives::crypto::{ReadablePublicKey, ReadablePrivateKey};
+use saito_primitives::slip:: Slip;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -16,10 +17,10 @@ pub struct Config {
 
 
 #[derive(Serialize, Deserialize)]
-struct ChainConfig {}
+pub struct ChainConfig {}
 
 #[derive(Serialize, Deserialize)]
-struct WalletConfig {
+pub struct WalletConfig {
     // assume both of these need to be strings in base58 to be ledgable for people 
     publickey: ReadablePublicKey,
     privatekey: ReadablePrivateKey,
@@ -29,7 +30,7 @@ struct WalletConfig {
 }
 
 #[derive(Serialize, Deserialize)]
-struct NetworkConfig {}
+pub struct NetworkConfig {}
 
 impl Config {
     pub fn read_from_file(path: &PathBuf) -> Config {

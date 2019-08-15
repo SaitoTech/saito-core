@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
-use crate::block::{Block};
-use crate::burnfee::BurnFee;
+
+use saito_primitives::block::{Block};
+use saito_primitives::burnfee::BurnFee;
 
 //
 // The Blockchain

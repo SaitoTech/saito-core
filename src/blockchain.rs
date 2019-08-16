@@ -411,7 +411,7 @@ impl Blockchain {
 	            // reset later blocks
 		    //
        	 	    //for (let h = pos+1; h < self.index.blocks.len(); h++) {
-       	 	    for h in ((pos+1)..(self.index.blocks.len()) {
+       	 	    for h in (pos+1)..self.index.blocks.len() {
 
 println!("resetting blockchain block off LC at: {:?}", h);
 println!("last to reset is: {:?}", self.index.blocks.len());

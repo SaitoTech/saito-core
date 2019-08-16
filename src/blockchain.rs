@@ -62,6 +62,7 @@ pub struct Blockchain {
     last_bsh:			[u8; 32],
     last_bid:			u32,
     last_ts:			u64,
+    last_bf:			f32,
 
     lowest_acceptable_ts:	u64,
     lowest_acceptable_bsh:	[u8; 32],
@@ -87,6 +88,7 @@ impl Blockchain {
 	    last_bsh:		   [0; 32],
 	    last_bid:		   0,
 	    last_ts:		   0,
+	    last_bf:		   0.0,
 
 	    lowest_acceptable_ts:  0,
 	    lowest_acceptable_bsh: [0; 32],
@@ -333,8 +335,8 @@ impl Blockchain {
             		    }
             
             		    shared_ancestor_pos = search_pos;
-            		    search_pos = search_pos - 1;
-            
+            		    if search_pos > 0 { search_pos = search_pos - 1; }            
+
             		    //
             		    // new chain completely disconnected
             		    // 
@@ -551,10 +553,40 @@ println!("last to reset is: {:?}", self.index.blocks.len());
       		new_block_idxs.reverse();
 
 	    }
+	} else {
+
+	    //
+	    // initialize
+	    //
+	    shared_ancestor_bsh  = [0;32];
+	    new_hash_to_hunt_for = [0;32];
+	    old_hash_to_hunt_for = [0;32];
+	    new_block_hashes     = vec![];
+	    new_block_idxs       = vec![];
+	    new_block_ids        = vec![];
+    	    old_block_idxs       = vec![];
+    	    old_block_ids        = vec![];
+	    old_block_hashes     = vec![];
+
+
 	}
 
 	// add block to blockchain
-	//self.validate_new_chain();
+	self.validate(
+	    blk,
+	    pos,
+	    i_am_the_longest_chain,
+	    shared_ancestor_bsh,
+	    new_hash_to_hunt_for,
+	    old_hash_to_hunt_for,
+	    new_block_hashes,
+	    new_block_idxs,
+	    new_block_ids,
+	    old_block_hashes,
+	    old_block_idxs,
+	    old_block_ids
+	);
+
 
 	println!("Adding block: {:?}", self.return_latest_bsh()); 
 	println!("lc: {:?}", i_am_the_longest_chain);
@@ -562,6 +594,36 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 
     }
 
+
+    pub fn validate(
+	&mut self, 
+	blk                  :Block,
+	pos		     :usize,
+	i_am_the_longest_chain:u8,
+	shared_ancestor_bsh  :[u8;32],
+	new_hash_to_hunt_for :[u8;32],
+	old_hash_to_hunt_for :[u8;32],
+	new_block_hashes     :Vec<[u8;32]>,
+	new_block_idxs       :Vec<usize>,
+	new_block_ids        :Vec<u32>,
+	old_block_hashes     :Vec<[u8;32]>,
+	old_block_idxs       :Vec<usize>,
+	old_block_ids        :Vec<u32>
+    ) {
+
+        //
+        // 
+        // 
+	self.add_block_success();
+
+    }
+
+    pub fn add_block_success(&mut self) {
+    }
+
+    pub fn add_block_failure(&mut self) {    
+    }
+    
 
 
 
@@ -575,17 +637,20 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 
     pub fn return_latest_ts(&mut self) -> u64 {
         if !self.lc_pos_set { return 0; }
-	return self.index.blocks[self.lc_pos].ts;
+	return self.last_ts.clone();
+	//return self.index.blocks[self.lc_pos].ts;
     }
 
     pub fn return_latest_bsh(&self) -> [u8; 32] {
         if !self.lc_pos_set { return [0; 32]; }
-	return self.index.blocks[self.lc_pos].bsh;
+	return self.last_bsh.clone();
+	//return self.index.blocks[self.lc_pos].bsh;
     }
 
     pub fn return_latest_bf_current(&self) -> f32 {
         if !self.lc_pos_set { return 0.0; }
-	return self.index.blocks[self.lc_pos].bf;
+	return self.last_bf.clone();
+	//return self.index.blocks[self.lc_pos].bf;
     }
 
     pub fn return_heartbeat(&self) -> u64 {

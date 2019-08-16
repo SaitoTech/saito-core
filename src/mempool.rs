@@ -44,10 +44,9 @@ impl Mempool {
     // TODO
     //
     // use blockchain data in RETURN_WORK_NEEDED call
-    //
     pub fn can_bundle_block (&mut self, wallet: &Wallet, blockchain: &Blockchain) -> bool {
 	let ts = create_timestamp();
-        let work_needed = self.burnfee.return_work_needed(0, ts, blockchain.return_latest_bf_current(), blockchain.return_heartbeat());
+        let work_needed = self.burnfee.return_work_needed(blockchain.return_latest_ts(), ts, blockchain.return_latest_bf_current(), blockchain.return_heartbeat());
         if work_needed <= self.work_available {
 	    return true;
         }

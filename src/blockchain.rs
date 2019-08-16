@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use saito_primitives::block::{Block};
 use saito_primitives::burnfee::BurnFee;
 
+use crate::storage::Storage;
+
 //
 // Block Header (for index)
 //
@@ -387,7 +389,7 @@ impl Blockchain {
 				    //
             		            //await this.addBlockToBlockchainSuccess(newblock, pos, 0);
 				    println!("blockchain - block disconnected from chain");
-            		            return;
+                                    return
             		        } 
             		    } 
    		        }
@@ -591,6 +593,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	println!("lc: {:?}", i_am_the_longest_chain);
         println!("ancestor: {:?}", shared_ancestor_pos);
 
+        Storage::write_block_to_disk(blk);
     }
 
 

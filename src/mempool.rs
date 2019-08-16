@@ -2,7 +2,6 @@ use std::{thread, time};
 use crate::wallet::Wallet;
 use crate::blockchain::Blockchain;
 use crate::blockchain::BlockHeader;
-
 use saito_primitives::block::Block;
 use saito_primitives::burnfee::BurnFee;
 use saito_primitives::transaction::Transaction;
@@ -54,8 +53,8 @@ impl Mempool {
 	return false;
     }
 
-    pub fn bundle_block (&mut self, wallet: &Wallet) -> Option<Block> {
-        let mut block = Block::new(wallet.return_publickey());
+    pub fn bundle_block (&mut self, wallet: &Wallet, block_header: BlockHeader) -> Option<Block> {
+        let mut block = Block::new(wallet.return_publickey(), block_header);
         block.set_transactions(&mut self.transactions);
         block.is_valid = 1;
 	self.clear_transactions();

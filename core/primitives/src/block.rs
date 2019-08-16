@@ -1,6 +1,8 @@
 use std::mem::transmute;
 use serde::{Serialize, Deserialize};
 
+use crate::blockchain::Blockchain;
+use crate::blockchain::BlockHeader;
 use crate::crypto::{hash, PublicKey};
 use crate::helper::{create_timestamp};
 use crate::transaction::Transaction;
@@ -35,11 +37,11 @@ pub struct BlockBody {
 
 
 impl BlockBody {
-    pub fn new(block_creator: PublicKey) -> BlockBody {
+    pub fn new(block_creator: PublicKey, prev_block_header: BlockHeader) -> BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          create_timestamp(),
-    	    prevbsh:     [0; 32],
+    	    prevbsh:     prev_block_header.bsh,
     	    merkle:      [0; 32],
     	    creator:     block_creator,
     	    txs:         vec![],
@@ -57,9 +59,9 @@ impl BlockBody {
 
 impl Block {
 
-    pub fn new(creator: PublicKey) -> Block {
+    pub fn new(creator: PublicKey, prev_block_header: BlockHeader) -> Block {
         return Block {
-	    body:      BlockBody::new(creator),
+	    body:      BlockBody::new(creator, prev_block_header),
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,

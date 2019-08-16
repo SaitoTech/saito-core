@@ -1,3 +1,4 @@
+use std::{thread, time};
 use crate::blockchain::Blockchain;
 use crate::mempool::Mempool;
 use crate::wallet::Wallet;
@@ -32,7 +33,7 @@ impl Consensus {
 
             if self.mempool.can_bundle_block(&self.wallet, self.blockchain.return_latest_block_header()) {
 
-                let blk = self.mempool.bundle_block(&self.wallet);
+                let blk = self.mempool.bundle_block(&self.wallet, self.blockchain.return_latest_block_header());
 		match blk {
 		    Some(blk) => {
                         self.blockchain.add_block(blk);
@@ -41,6 +42,9 @@ impl Consensus {
 		}	
 
 	    }
+
+            let three_seconds = time::Duration::from_millis(3000);
+            thread::sleep(three_seconds);
         } 
 
     }

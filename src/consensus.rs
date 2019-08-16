@@ -30,7 +30,7 @@ impl Consensus {
     pub fn init(&mut self ) {
         loop {
 
-            if self.mempool.can_bundle_block(&self.wallet, &self.blockchain) {
+            if self.mempool.can_bundle_block(&self.wallet, self.blockchain.return_latest_block_header()) {
 
                 let blk = self.mempool.bundle_block(&self.wallet);
 		match blk {

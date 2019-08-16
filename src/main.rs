@@ -19,18 +19,6 @@ fn main() {
     //
     let system = System::new("SAITO");
 
-let x :[u8;32] = [0;32];
-let y :[u8;32] = [1;32];
-let z :[u8;32] = [0;32];
-
-if x == y {
-  println!("X is equal to Y");
-}
-if x == z {
-  println!("X is equal to Z");
-}
-
-
     //    
     // Instantiate
     //

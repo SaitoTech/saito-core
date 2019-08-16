@@ -14,11 +14,11 @@ use saito_primitives::burnfee::BurnFee;
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockHeader {
-    bf:  f32,
-    bsh: [u8;32],
-    prevbsh: [u8;32],
-    bid: u32,
-    ts:  u64,
+    pub bf:  f32,
+    pub bsh: [u8;32],
+    pub prevbsh: [u8;32],
+    pub bid: u32,
+    pub ts:  u64,
 }
 
 impl BlockHeader {
@@ -619,7 +619,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	);
 
 
-	println!("Adding block: {:?}", self.return_latest_bsh()); 
+	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
         println!("ancestor: {:?}", shared_ancestor_pos);
 
@@ -666,22 +666,11 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	}
     }
 
-    pub fn return_latest_ts(&mut self) -> u64 {
-        if !self.lc_pos_set { return 0; }
-	return self.last_ts.clone();
-	//return self.index.blocks[self.lc_pos].ts;
-    }
-
-    pub fn return_latest_bsh(&self) -> [u8; 32] {
-        if !self.lc_pos_set { return [0; 32]; }
-	return self.last_bsh.clone();
-	//return self.index.blocks[self.lc_pos].bsh;
-    }
-
-    pub fn return_latest_bf_current(&self) -> f32 {
-        if !self.lc_pos_set { return 0.0; }
-	return self.last_bf.clone();
-	//return self.index.blocks[self.lc_pos].bf;
+    pub fn return_latest_block_header(&mut self) -> BlockHeader {
+        if !self.lc_pos_set { 
+	    return BlockHeader::new(0.0, [0;32], [0;32], 0, 0);
+	}
+	return self.index.blocks[self.lc_pos].clone();
     }
 
     pub fn return_heartbeat(&self) -> u64 {

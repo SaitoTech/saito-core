@@ -77,7 +77,7 @@ impl Transaction {
     //
     // TODO - calculate based on path information not 1
     //
-    pub fn return_work_available(&self, publickey: &str) -> u64 {
+    pub fn return_work_available(&self, _publickey: &str) -> u64 {
         return 1;
     }
 }

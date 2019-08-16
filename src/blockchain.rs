@@ -14,27 +14,56 @@ use saito_primitives::burnfee::BurnFee;
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockHeader {
-    bf	 :f32,
-    bsh  :[u8;32],
-    prevbsh  :[u8;32],
-    bid  :u32,
-    ts   :u64,
+    bf:  f32,
+    bsh: [u8;32],
+    prevbsh: [u8;32],
+    bid: u32,
+    ts:  u64,
 }
 
 impl BlockHeader {
-    pub fn new(bf :f32, bsh :[u8;32], prevbsh :[u8;32], bid :u32, ts :u64) -> BlockHeader {
-        return BlockHeader {
-	    bf:	                   bf,
-	    bsh:		   bsh,
-	    prevbsh:		   bsh,
-	    bid:		   bid,
-	    ts:		   	   ts,
-        };
+    pub fn new(bf: f32, bsh: [u8;32], prevbsh: [u8;32], bid: u32, ts: u64) -> BlockHeader {
+        return BlockHeader { bf, bsh, prevbsh, bid, ts };
     }
 }
 
+//
+// The Blockchain Indices 
+//
+// the contents of this data object are kept in sync so that
+// every element in every vector references the same implicit
+// block, regardless of whether it is on the longest chain or
+// not.
+//
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct BlockchainIndex {
+    blocks:      Vec<BlockHeader>,                  // blocks
+    //blocks:      Vec<Block>,                  // blocks
+    //bsh:         Vec<[u8; 32]>,               // hashes
+    //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
+    //bid:         Vec<u32>,                    // block id
+    //mintid:      Vec<u32>,
+    //maxtid:      Vec<u32>,
+    //ts:          Vec<u64>,                    // timestamps
+    //lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
+    //bf:          Vec<f32>                     // burnfee per block
+}
 
-
+impl BlockchainIndex {
+    pub fn new() -> BlockchainIndex {
+        return BlockchainIndex {
+            blocks:      vec![],                 // blocks
+            //bsh:         vec![],                 // hashes
+            //prevbsh:     vec![],                 // hash of previous block
+            //bid:         vec![],                 // block id
+            //mintid:      vec![],                 // min tid
+            //maxtid:      vec![],                 // max tid
+            //ts:          vec![],                 // timestamps
+            //lc:          vec![],                 // is longest chain (0 = no, 1 = yes)
+            //bf:          vec![]                  // burnfee per block
+        };
+    }
+}
 
 
 //
@@ -589,46 +618,6 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 
 }
 
-
-
-
-//
-// The Blockchain Indices 
-//
-// the contents of this data object are kept in sync so that
-// every element in every vector references the same implicit
-// block, regardless of whether it is on the longest chain or
-// not.
-//
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct BlockchainIndex {
-    blocks:      Vec<BlockHeader>,                  // blocks
-    //blocks:      Vec<Block>,                  // blocks
-    //bsh:         Vec<[u8; 32]>,               // hashes
-    //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
-    //bid:         Vec<u32>,                    // block id
-    //mintid:      Vec<u32>,
-    //maxtid:      Vec<u32>,
-    //ts:          Vec<u64>,                    // timestamps
-    //lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
-    //bf:          Vec<f32>                     // burnfee per block
-}
-
-impl BlockchainIndex {
-    pub fn new() -> BlockchainIndex {
-        return BlockchainIndex {
-            blocks:      vec![],                 // blocks
-            //bsh:         vec![],                 // hashes
-            //prevbsh:     vec![],                 // hash of previous block
-            //bid:         vec![],                 // block id
-            //mintid:      vec![],                 // min tid
-            //maxtid:      vec![],                 // max tid
-            //ts:          vec![],                 // timestamps
-            //lc:          vec![],                 // is longest chain (0 = no, 1 = yes)
-            //bf:          vec![]                  // burnfee per block
-        };
-    }
-}
 
 
 

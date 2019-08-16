@@ -1,7 +1,6 @@
 use std::{thread, time};
 use crate::wallet::Wallet;
-use crate::blockchain::Blockchain;
-use crate::blockchain::BlockHeader;
+use saito_primitives::blockheader::BlockHeader;
 use saito_primitives::block::Block;
 use saito_primitives::burnfee::BurnFee;
 use saito_primitives::transaction::Transaction;

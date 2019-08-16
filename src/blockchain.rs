@@ -98,6 +98,10 @@ impl Blockchain {
 
     pub fn add_block(&mut self, blk: Block) {
 
+	///////////////////
+	// SANITY CHECKS //
+	///////////////////
+
 	//
 	// check block is superficially valid
 	//
@@ -105,12 +109,6 @@ impl Blockchain {
 	    println!("block is not valid - terminating add_block in blockchain...");
 	    return;
 	}
-
-	//
-	// create reference for previous lc
-	//
-	let last_lc_pos = self.lc_pos; 
-
 
 	//
 	// ignore pre-genesis blocks
@@ -125,7 +123,6 @@ impl Blockchain {
 	    return;
 	}
 
-
 	//
 	// ignore hash collisions
 	//
@@ -133,6 +130,17 @@ impl Blockchain {
 	    println!("not adding block to blockchain -- bsh already indexed");
 	    return;
 	}
+
+
+
+	/////////////////////////////////
+	// SETTING IMPORTANT VARIABLES //
+	/////////////////////////////////
+
+	//
+	// create reference for previous lc
+	//
+	let last_lc_pos = self.lc_pos; 
 
 
   	//
@@ -209,26 +217,34 @@ impl Blockchain {
     	}
 
 
-	//
-	// insert indexes
+
+	////////////////////
+	// insert indexes //
+	////////////////////
 	//
 	// TODO -- we insert the full block, including transactions but we should
 	// probably avoid this. We could try inserting a ghost block that does 
 	// not have the transaction data but that has the stuff we care about in
 	// order to determine the public chain.
 	//
-	// bf / ts / prevbsh / bsh
+	// bf / ts / prevbsh / bsh / bid
 	//
 	//
         let block_header_entry = BlockHeader::new(blk.body.bf.current, blk.return_bsh(), blk.body.prevbsh, blk.body.id, blk.body.ts);
+
+	//
+	// TODO - binary search on insert point
+	//
 	let pos :usize = self.index.blocks.len();
         self.bsh_bid_hmap.insert(blk.return_bsh(), blk.body.id);
-        self.index.blocks.insert(pos, block_header_entry);	// pass control
+        self.index.blocks.insert(pos, block_header_entry);
 
 
-	//
-	// identify longest chain
-	//
+
+	////////////////////////////
+	// identify longest chain //
+	////////////////////////////
+
 	let mut i_am_the_longest_chain : u8 = 0;
         let mut shared_ancestor_pos : usize = 0;
         let mut shared_ancestor_pos_found : bool = false;
@@ -273,7 +289,6 @@ impl Blockchain {
         	    let mut nchain_prevbsh   :[u8;32] = self.index.blocks[nchain_pos].prevbsh;
 	            let mut search_pos       :usize   = 0;
         	    let mut search_bf        :f32  	  = 0.0;
-        	    let mut search_ts        :u64     = 0;
         	    let mut search_bsh       :[u8;32] = [0;32];
         	    let mut search_prevbsh   :[u8;32] = [0;32];
 		    let mut search_completed :bool    = false;
@@ -288,7 +303,6 @@ impl Blockchain {
 
 			if search_pos == 0 { search_completed = true; }
 
-	                search_ts         = self.index.blocks[search_pos].ts;
           	        search_bf         = self.index.blocks[search_pos].bf;
           	        search_bsh        = self.index.blocks[search_pos].bsh;
           	        search_prevbsh    = self.index.blocks[search_pos].prevbsh;

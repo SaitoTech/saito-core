@@ -286,6 +286,8 @@ impl Blockchain {
 
 		    while search_pos >= 0 && search_completed == false {
 
+			if search_pos == 0 { search_completed = true; }
+
 	                search_ts         = self.index.blocks[search_pos].ts;
           	        search_bf         = self.index.blocks[search_pos].bf;
           	        search_bsh        = self.index.blocks[search_pos].bsh;

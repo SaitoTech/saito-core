@@ -61,7 +61,7 @@ impl Network {
     }
 
     pub fn send_block_to_consensus(&self, publickey: PublicKey) {
-        let blk = Block::new(publickey); 
+        let blk = Block::new(publickey, [1;32]);
         self.consensus_addr.do_send(NetworkMessage::IncomingBlock(blk));
     }
 

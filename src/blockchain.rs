@@ -252,7 +252,8 @@ impl Blockchain {
 
 	//
 	// find the shared ancestor position
-	//
+	// figure out if i am on the longest chain
+        //
 	if self.index.blocks.len() == 1 {
 	
     	    //
@@ -288,7 +289,7 @@ impl Blockchain {
         	    let mut lchain_prevbsh   :[u8;32] = self.index.blocks[lchain_pos].prevbsh;
         	    let mut nchain_prevbsh   :[u8;32] = self.index.blocks[nchain_pos].prevbsh;
 	            let mut search_pos       :usize   = 0;
-        	    let mut search_bf        :f32  	  = 0.0;
+        	    let mut search_bf        :f32     = 0.0;
         	    let mut search_bsh       :[u8;32] = [0;32];
         	    let mut search_prevbsh   :[u8;32] = [0;32];
 		    let mut search_completed :bool    = false;
@@ -426,7 +427,6 @@ impl Blockchain {
 		    //
 	            // reset later blocks
 		    //
-       	 	    //for (let h = pos+1; h < self.index.blocks.len(); h++) {
        	 	    for h in (pos+1)..self.index.blocks.len() {
 
 println!("resetting blockchain block off LC at: {:?}", h);
@@ -551,21 +551,10 @@ println!("last to reset is: {:?}", self.index.blocks.len());
       		new_block_idxs.reverse();
 
 	    }
-
-	    //
-	    // longest chain, so wind / unwind and add the block with lc=1
-	    //
-
-
-	} else {
-
-	    //
-	    // not longest chain, so just directly add the block with lc=0
-	    //
-
-
 	}
 
+	// add block to blockchain
+	//self.validate_new_chain();
 
 	println!("Adding block: {:?}", self.return_latest_bsh()); 
 	println!("lc: {:?}", i_am_the_longest_chain);

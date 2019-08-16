@@ -138,7 +138,7 @@ impl Blockchain {
   	//
   	// previous block not indexed, but acceptable
   	//
-  	if (blk.body.ts < self.lowest_acceptable_ts) {
+  	if blk.body.ts < self.lowest_acceptable_ts {
       	    self.lowest_acceptable_ts = blk.body.ts;
   	}
 
@@ -154,7 +154,7 @@ impl Blockchain {
 	// earliest block we need to worry about when handling full slip
 	// validation.
   	//
-  	if (self.lowest_acceptable_ts == 0) {
+  	if self.lowest_acceptable_ts == 0 {
 
 	    self.lowest_acceptable_bid = blk.body.id;
     	    self.lowest_acceptable_bsh = blk.return_bsh();
@@ -168,13 +168,13 @@ impl Blockchain {
       	    //    this.lowest_acceptable_ts = this.last_ts;
             //}
 
-            if (self.lowest_acceptable_ts == 0) {
+            if self.lowest_acceptable_ts == 0 {
                 self.lowest_acceptable_ts = blk.body.ts;
             }
 
 	} else {
 
-    	    if (self.lowest_acceptable_ts > blk.body.ts) {
+    	    if self.lowest_acceptable_ts > blk.body.ts {
 
 		//
 		// TODO
@@ -303,13 +303,13 @@ impl Blockchain {
 			//
 			} else {
 
-            		    if (search_bsh == lchain_prevbsh) {
+            		    if search_bsh == lchain_prevbsh {
             		        lchain_len = lchain_len + 1; 
             		        lchain_prevbsh = self.index.blocks[search_pos].prevbsh;
             		        lchain_bf = lchain_bf + self.index.blocks[search_pos].bf;
             		    }
             
-            		    if (search_bsh == nchain_prevbsh) {
+            		    if search_bsh == nchain_prevbsh {
             		        nchain_prevbsh = self.index.blocks[search_pos].prevbsh;
             		        nchain_len = nchain_len + 1; 
             		        nchain_bf = nchain_bf + self.index.blocks[search_pos].bf;
@@ -321,7 +321,7 @@ impl Blockchain {
             		    //
             		    // new chain completely disconnected
             		    // 
-            		    if (shared_ancestor_pos == 1) {
+            		    if shared_ancestor_pos == 1 {
             		        if [0;32] == nchain_prevbsh {
 				    //
 				    // add the block, and escape from this
@@ -332,7 +332,7 @@ impl Blockchain {
             		        } 
             		    } 
 
-            		    if (shared_ancestor_pos == 0) {
+            		    if shared_ancestor_pos == 0 {
             		        if lchain_prevbsh == nchain_prevbsh {
 				    //
 				    // add the block, and escape from this
@@ -350,7 +350,7 @@ impl Blockchain {
         	    // our two possible chains, and we need to decide which
         	    // we are treating as the longest chain.
         	    //
-        	    if (nchain_len > lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true) {
+        	    if nchain_len > lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true {
 
 		        //
    		        // to prevent our system from being gamed, we
@@ -376,7 +376,7 @@ impl Blockchain {
    		        // this is like the option above, except that we
    		        // have a choice of which block to support.
    		        //
-   		        if (nchain_len == lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true) {
+   		        if nchain_len == lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true {
 
 			    //
 			    // TODO - allow voter preference 
@@ -411,7 +411,7 @@ impl Blockchain {
 	            // reset later blocks
 		    //
        	 	    //for (let h = pos+1; h < self.index.blocks.len(); h++) {
-       	 	    for h in ((pos+1)..(self.index.blocks.len()) {
+       	 	    for h in (pos+1)..self.index.blocks.len() {
 
 println!("resetting blockchain block off LC at: {:?}", h);
 println!("last to reset is: {:?}", self.index.blocks.len());
@@ -499,7 +499,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	    //
 	    // our block builds on the longest chain
 	    //
-	    if (blk.body.prevbsh == old_hash_to_hunt_for) {
+	    if blk.body.prevbsh == old_hash_to_hunt_for {
 	        new_block_hashes.push(self.index.blocks[pos].bsh);
 	        new_block_ids.push(self.index.blocks[pos].bid);
 	        new_block_idxs.push(pos);
@@ -510,7 +510,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	    //
 	    else {
 
-	        for j in (shared_ancestor_pos+1)..(self.index.blocks.len()).rev() {
+	        for j in ((shared_ancestor_pos+1)..(self.index.blocks.len())).rev() {
 	            if self.index.hash[j] == old_hash_to_hunt_for {
           		old_hash_to_hunt_for = self.index.blocks[j].prevbsh;
           		old_block_hashes.push(self.index.blocks[j].bsh);
@@ -522,7 +522,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
       		old_block_hashes.reverse();
       		old_block_idxs.reverse();
 
-	        for j in (shared_ancestor_pos+1)..(self.index.blocks.len()).rev() {
+	        for j in ((shared_ancestor_pos+1)..(self.index.blocks.len())).rev() {
         	    if self.index.blocks[j].bsh == new_hash_to_hunt_for {
           		new_hash_to_hunt_for = self.index.blocks[j].prevbsh;
           		new_block_hashes.push(self.index.blocks[j].bsh);
@@ -569,17 +569,17 @@ println!("last to reset is: {:?}", self.index.blocks.len());
     }
 
     pub fn return_latest_ts(&mut self) -> u64 {
-        if (!self.lc_pos_set) { return 0; }
+        if !self.lc_pos_set { return 0; }
 	return self.index.blocks[self.lc_pos].ts;
     }
 
     pub fn return_latest_bsh(&self) -> [u8; 32] {
-        if (!self.lc_pos_set) { return [0; 32]; }
+        if !self.lc_pos_set { return [0; 32]; }
 	return self.index.blocks[self.lc_pos].bsh;
     }
 
     pub fn return_latest_bf_current(&self) -> f32 {
-        if (!self.lc_pos_set) { return 0.0; }
+        if !self.lc_pos_set { return 0.0; }
 	return self.index.blocks[self.lc_pos].bf;
     }
 

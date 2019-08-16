@@ -33,13 +33,35 @@ pub struct BlockBody {
     reclaimed:       u64
 }
 
+//
+// Block Header (for index)
+//
+// the contents of this data object represent the information 
+// about the block itself that is stored in the blockchain
+// index. it is used primarily when rolling / unrolling the 
+// blockchain.
+//
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct BlockHeader {
+    pub bf:  f32,
+    pub bsh: [u8;32],
+    pub prevbsh: [u8;32],
+    pub bid: u32,
+    pub ts:  u64,
+}
+
+impl BlockHeader {
+    pub fn new(bf: f32, bsh: [u8;32], prevbsh: [u8;32], bid: u32, ts: u64) -> BlockHeader {
+        return BlockHeader { bf, bsh, prevbsh, bid, ts };
+    }
+}
 
 impl BlockBody {
-    pub fn new(block_creator: PublicKey) -> BlockBody {
+    pub fn new(block_creator: PublicKey, prevbsh: [u8;32]) -> BlockBody {
         return BlockBody {
     	    id:          0,
     	    ts:          create_timestamp(),
-    	    prevbsh:     [0; 32],
+    	    prevbsh:     prevbsh,
     	    merkle:      [0; 32],
     	    creator:     block_creator,
     	    txs:         vec![],
@@ -57,9 +79,9 @@ impl BlockBody {
 
 impl Block {
 
-    pub fn new(creator: PublicKey) -> Block {
+    pub fn new(creator: PublicKey, prevbsh: [u8;32]) -> Block {
         return Block {
-	    body:      BlockBody::new(creator),
+	    body:      BlockBody::new(creator, prevbsh),
 	    is_valid:  0,
 	    mintid:    0,
 	    maxtid:    0,

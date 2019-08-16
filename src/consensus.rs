@@ -37,8 +37,7 @@ impl Consensus {
 		    Some(blk) => {
                         self.blockchain.add_block(blk);
 		    },
-		    None => {
-		    },
+		    None => {},
 		}	
 
 	    }

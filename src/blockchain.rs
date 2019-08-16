@@ -14,27 +14,56 @@ use saito_primitives::burnfee::BurnFee;
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockHeader {
-    bf	 :f32,
-    bsh  :[u8;32],
-    prevbsh  :[u8;32],
-    bid  :u32,
-    ts   :u64,
+    bf:  f32,
+    bsh: [u8;32],
+    prevbsh: [u8;32],
+    bid: u32,
+    ts:  u64,
 }
 
 impl BlockHeader {
-    pub fn new(bf :f32, bsh :[u8;32], prevbsh :[u8;32], bid :u32, ts :u64) -> BlockHeader {
-        return BlockHeader {
-	    bf:	                   bf,
-	    bsh:		   bsh,
-	    prevbsh:		   bsh,
-	    bid:		   bid,
-	    ts:		   	   ts,
-        };
+    pub fn new(bf: f32, bsh: [u8;32], prevbsh: [u8;32], bid: u32, ts: u64) -> BlockHeader {
+        return BlockHeader { bf, bsh, prevbsh, bid, ts };
     }
 }
 
+//
+// The Blockchain Indices 
+//
+// the contents of this data object are kept in sync so that
+// every element in every vector references the same implicit
+// block, regardless of whether it is on the longest chain or
+// not.
+//
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+pub struct BlockchainIndex {
+    blocks:      Vec<BlockHeader>,                  // blocks
+    //blocks:      Vec<Block>,                  // blocks
+    //bsh:         Vec<[u8; 32]>,               // hashes
+    //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
+    //bid:         Vec<u32>,                    // block id
+    //mintid:      Vec<u32>,
+    //maxtid:      Vec<u32>,
+    //ts:          Vec<u64>,                    // timestamps
+    //lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
+    //bf:          Vec<f32>                     // burnfee per block
+}
 
-
+impl BlockchainIndex {
+    pub fn new() -> BlockchainIndex {
+        return BlockchainIndex {
+            blocks:      vec![],                 // blocks
+            //bsh:         vec![],                 // hashes
+            //prevbsh:     vec![],                 // hash of previous block
+            //bid:         vec![],                 // block id
+            //mintid:      vec![],                 // min tid
+            //maxtid:      vec![],                 // max tid
+            //ts:          vec![],                 // timestamps
+            //lc:          vec![],                 // is longest chain (0 = no, 1 = yes)
+            //bf:          vec![]                  // burnfee per block
+        };
+    }
+}
 
 
 //
@@ -237,7 +266,7 @@ impl Blockchain {
 	//
 	// TODO - binary search on insert point
 	//
-	let pos :usize = self.index.blocks.len();
+	let pos: usize = self.index.blocks.len();
         self.bsh_bid_hmap.insert(blk.return_bsh(), blk.body.id);
         self.index.blocks.insert(pos, block_header_entry);
 
@@ -247,9 +276,9 @@ impl Blockchain {
 	// identify longest chain //
 	////////////////////////////
 
-	let mut i_am_the_longest_chain : u8 = 0;
-        let mut shared_ancestor_pos : usize = 0;
-        let mut shared_ancestor_pos_found : bool = false;
+	let mut i_am_the_longest_chain: u8  = 0;
+        let mut shared_ancestor_pos: usize  = 0;
+        let mut shared_ancestor_pos_found: bool = false;
 
 
 	//
@@ -280,21 +309,21 @@ impl Blockchain {
 		    //
         	    // find the last shared ancestor
         	    //
-        	    let mut lchain_pos       :usize   = self.lc_pos;
-        	    let mut nchain_pos       :usize   = pos;
-        	    let mut lchain_len       :u32     = 0;
-        	    let mut nchain_len       :u32     = 0;
-        	    let mut lchain_bf        :f32     = self.index.blocks[lchain_pos].bf;
-        	    let mut nchain_bf        :f32     = self.index.blocks[nchain_pos].bf;
-        	    let mut lchain_ts        :u64     = self.index.blocks[lchain_pos].ts;
-        	    let mut nchain_ts        :u64     = self.index.blocks[nchain_pos].ts;
-        	    let mut lchain_prevbsh   :[u8;32] = self.index.blocks[lchain_pos].prevbsh;
-        	    let mut nchain_prevbsh   :[u8;32] = self.index.blocks[nchain_pos].prevbsh;
-	            let mut search_pos       :usize   = 0;
-        	    let mut search_bf        :f32     = 0.0;
-        	    let mut search_bsh       :[u8;32] = [0;32];
-        	    let mut search_prevbsh   :[u8;32] = [0;32];
-		    let mut search_completed :bool    = false;
+        	    let mut lchain_pos:       usize   = self.lc_pos;
+        	    let mut nchain_pos:       usize   = pos;
+        	    let mut lchain_len:       u32     = 0;
+        	    let mut nchain_len:       u32     = 0;
+        	    let mut lchain_bf:        f32     = self.index.blocks[lchain_pos].bf;
+        	    let mut nchain_bf:        f32     = self.index.blocks[nchain_pos].bf;
+        	    let mut lchain_ts:        u64     = self.index.blocks[lchain_pos].ts;
+        	    let mut nchain_ts:        u64     = self.index.blocks[nchain_pos].ts;
+        	    let mut lchain_prevbsh:   [u8;32] = self.index.blocks[lchain_pos].prevbsh;
+        	    let mut nchain_prevbsh:   [u8;32] = self.index.blocks[nchain_pos].prevbsh;
+	            let mut search_pos:       usize   = 0;
+        	    let mut search_bf:        f32     = 0.0;
+        	    let mut search_bsh:       [u8;32] = [0;32];
+        	    let mut search_prevbsh:   [u8;32] = [0;32];
+		    let mut search_completed: bool    = false;
 
 	            if nchain_ts >= lchain_ts {
 	                search_pos = nchain_pos - 1;
@@ -302,9 +331,11 @@ impl Blockchain {
           	        search_pos = lchain_pos - 1;
          	    }
 
-		    while search_pos >= 0 && search_completed == false {
+		    while !search_completed {
 
-			if search_pos == 0 { search_completed = true; }
+			if search_pos == 0 { 
+                            search_completed = true; 
+                        }
 
           	        search_bf         = self.index.blocks[search_pos].bf;
           	        search_bsh        = self.index.blocks[search_pos].bsh;
@@ -336,7 +367,7 @@ impl Blockchain {
             
             		    shared_ancestor_pos = search_pos;
             		    if search_pos > 0 { search_pos = search_pos - 1; }            
-
+            
             		    //
             		    // new chain completely disconnected
             		    // 
@@ -477,15 +508,15 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	//
 	// old and new chains
 	//
-	let mut shared_ancestor_bsh  :[u8;32];
-	let mut new_hash_to_hunt_for :[u8;32];
-	let mut old_hash_to_hunt_for :[u8;32];
-	let mut new_block_hashes     :Vec<[u8;32]>;
-	let mut new_block_idxs       :Vec<usize>;
-	let mut new_block_ids        :Vec<u32>;
-	let mut old_block_hashes     :Vec<[u8;32]>;
-	let mut old_block_idxs       :Vec<usize>;
-	let mut old_block_ids        :Vec<u32>;
+	let mut shared_ancestor_bsh:  [u8;32];
+	let mut new_hash_to_hunt_for: [u8;32];
+	let mut old_hash_to_hunt_for: [u8;32];
+	let mut new_block_hashes:     Vec<[u8;32]>;
+	let mut new_block_idxs:       Vec<usize>;
+	let mut new_block_ids:        Vec<u32>;
+	let mut old_block_hashes:     Vec<[u8;32]>;
+	let mut old_block_idxs:       Vec<usize>;
+	let mut old_block_ids:        Vec<u32>;
 
 
 	//
@@ -659,46 +690,6 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 
 }
 
-
-
-
-//
-// The Blockchain Indices 
-//
-// the contents of this data object are kept in sync so that
-// every element in every vector references the same implicit
-// block, regardless of whether it is on the longest chain or
-// not.
-//
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct BlockchainIndex {
-    blocks:      Vec<BlockHeader>,                  // blocks
-    //blocks:      Vec<Block>,                  // blocks
-    //bsh:         Vec<[u8; 32]>,               // hashes
-    //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
-    //bid:         Vec<u32>,                    // block id
-    //mintid:      Vec<u32>,
-    //maxtid:      Vec<u32>,
-    //ts:          Vec<u64>,                    // timestamps
-    //lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
-    //bf:          Vec<f32>                     // burnfee per block
-}
-
-impl BlockchainIndex {
-    pub fn new() -> BlockchainIndex {
-        return BlockchainIndex {
-            blocks:      vec![],                 // blocks
-            //bsh:         vec![],                 // hashes
-            //prevbsh:     vec![],                 // hash of previous block
-            //bid:         vec![],                 // block id
-            //mintid:      vec![],                 // min tid
-            //maxtid:      vec![],                 // max tid
-            //ts:          vec![],                 // timestamps
-            //lc:          vec![],                 // is longest chain (0 = no, 1 = yes)
-            //bf:          vec![]                  // burnfee per block
-        };
-    }
-}
 
 
 

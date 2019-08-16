@@ -488,7 +488,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 
 	    shared_ancestor_bsh  = self.index.blocks[shared_ancestor_pos].bsh;
 	    new_hash_to_hunt_for = blk.return_bsh();
-	    old_hash_to_hunt_for = self.index.hash[last_lc_pos];
+	    old_hash_to_hunt_for = self.index.blocks[last_lc_pos].bsh;
 	    new_block_hashes     = vec![];
 	    new_block_idxs       = vec![];
 	    new_block_ids        = vec![];
@@ -511,7 +511,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	    else {
 
 	        for j in ((shared_ancestor_pos+1)..(self.index.blocks.len())).rev() {
-	            if self.index.hash[j] == old_hash_to_hunt_for {
+	            if self.index.blocks[j].bsh == old_hash_to_hunt_for {
           		old_hash_to_hunt_for = self.index.blocks[j].prevbsh;
           		old_block_hashes.push(self.index.blocks[j].bsh);
           		old_block_ids.push(self.index.blocks[j].bid);

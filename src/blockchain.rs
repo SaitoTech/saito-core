@@ -593,7 +593,6 @@ println!("LC POS SET!");
 	    pos,
 	    shared_ancestor_pos,
 	    i_am_the_longest_chain,
-	    shared_ancestor_bsh,
 	    new_hash_to_hunt_for,
 	    old_hash_to_hunt_for,
 	    new_block_hashes,
@@ -604,14 +603,6 @@ println!("LC POS SET!");
 	    old_block_ids
 	);
 
-
-        Storage::write_block_to_disk(blk);
-
-	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
-	println!("lc: {:?}", i_am_the_longest_chain);
-        println!("ancestor: {:?}", shared_ancestor_pos);
-	println!("\n\n\n");
-
     }
 
 
@@ -620,12 +611,11 @@ println!("LC POS SET!");
     //////////////////////////////////////////
     pub fn validate(
 	&mut self, 
-	blk                  :Block,
+	mut blk              :Block,
         shashmap             :&mut Shashmap,
 	pos		     :usize,
 	shared_ancestor_pos  :usize,
 	i_am_the_longest_chain:u8,
-	shared_ancestor_bsh  :[u8;32],
 	new_hash_to_hunt_for :[u8;32],
 	old_hash_to_hunt_for :[u8;32],
 	new_block_hashes     :Vec<[u8;32]>,
@@ -649,6 +639,7 @@ println!("{}", create_timestamp());
 		// -- force is not added as argment to this function, fix?
 		//
 	    self.add_block_failure(blk, pos, i_am_the_longest_chain, 0);
+	    return;
 	}
 
 	//
@@ -664,6 +655,7 @@ println!("{}", create_timestamp());
 	// unwind and wind
 	//
 	if old_block_hashes.len() > 0 {
+	    let obhlen = old_block_hashes.len()-1;
 	    self.unwind_chain(
 	        blk,
                 shashmap,
@@ -680,7 +672,7 @@ println!("{}", create_timestamp());
 	        old_block_ids,
   		force,
   		0,
-  		old_block_hashes.len()-1,
+  		obhlen,
 	    ); 
 	} else {
 	    self.wind_chain(
@@ -724,29 +716,28 @@ println!("{}", create_timestamp());
         // 
 	self.add_block_success();
 *****/
-println!("{}", create_timestamp());
 
     }
 
 
     pub fn unwind_chain(
-	        &mut self,
-		blk		     :Block,
-                shashmap             :&mut Shashmap,
-	        pos		     :usize,
- 	        mut i_am_the_longest_chain:u8,
-	        shared_ancestor_pos  :usize,
-	        mut new_hash_to_hunt_for :[u8;32],
-	        mut old_hash_to_hunt_for :[u8;32],
-	        new_block_hashes     :Vec<[u8;32]>,
-	        new_block_idxs       :Vec<usize>,
-	        new_block_ids        :Vec<u32>,
-	        old_block_hashes     :Vec<[u8;32]>,
-	        old_block_idxs       :Vec<usize>,
-	        old_block_ids        :Vec<u32>,
-		mut force            :u8,
-         	mut resetting_flag   :u8,
-         	mut current_unwind_index :usize,
+	 &mut self,
+	 mut blk	      :Block,
+         shashmap             :&mut Shashmap,
+	 pos		      :usize,
+ 	 mut i_am_the_longest_chain:u8,
+	 shared_ancestor_pos  :usize,
+	 mut new_hash_to_hunt_for :[u8;32],
+	 mut old_hash_to_hunt_for :[u8;32],
+	 new_block_hashes     :Vec<[u8;32]>,
+	 new_block_idxs       :Vec<usize>,
+	 new_block_ids        :Vec<u32>,
+	 old_block_hashes     :Vec<[u8;32]>,
+	 old_block_idxs       :Vec<usize>,
+	 old_block_ids        :Vec<u32>,
+	 mut force            :u8,
+         mut resetting_flag   :u8,
+         mut current_unwind_index :usize,
     ) {
 
 
@@ -878,23 +869,23 @@ println!("{}", create_timestamp());
 
 
     pub fn wind_chain(
-	        &mut self,
-	        blk		     :Block,
-                shashmap             :&mut Shashmap,
-	        pos		     :usize,
- 	        i_am_the_longest_chain:u8,
-	        shared_ancestor_pos  :usize,
-	        new_hash_to_hunt_for :[u8;32],
-	        old_hash_to_hunt_for :[u8;32],
-	        new_block_hashes     :Vec<[u8;32]>,
-	        new_block_idxs       :Vec<usize>,
-	        new_block_ids        :Vec<u32>,
-	        old_block_hashes     :Vec<[u8;32]>,
-	        old_block_idxs       :Vec<usize>,
-	        old_block_ids        :Vec<u32>,
-		mut force            :u8,
-         	mut resetting_flag   :u8,
-         	mut current_wind_index :usize,
+	&mut self,
+	mut blk		     :Block,
+        shashmap             :&mut Shashmap,
+        pos		     :usize,
+        i_am_the_longest_chain:u8,
+        shared_ancestor_pos  :usize,
+        new_hash_to_hunt_for :[u8;32],
+        old_hash_to_hunt_for :[u8;32],
+        new_block_hashes     :Vec<[u8;32]>,
+        new_block_idxs       :Vec<usize>,
+        new_block_ids        :Vec<u32>,
+        old_block_hashes     :Vec<[u8;32]>,
+        old_block_idxs       :Vec<usize>,
+        old_block_ids        :Vec<u32>,
+	mut force            :u8,
+       	mut resetting_flag   :u8,
+        mut current_wind_index :usize,
     ) {
 
 
@@ -972,9 +963,9 @@ println!("{}", create_timestamp());
             	    // added blocks from the new chain. so we
             	    // swap our hashes to wind/unwind.
             	    //
-            	    let chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
-            	    let chain_to_unwind_idxs   :Vec<usize>   = vec![];
-            	    let chain_to_unwind_ids    :Vec<usize>   = vec![];
+            	    let mut chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
+            	    let mut chain_to_unwind_idxs   :Vec<usize>   = vec![];
+            	    let mut chain_to_unwind_ids    :Vec<u32>   = vec![];
 
 	    	    // 
 	    	    // TODO 
@@ -996,6 +987,7 @@ println!("{}", create_timestamp());
             	    //
             	    // note that we are setting the resetting_flag to 1
             	    //
+		    let ctulen = chain_to_unwind_hashes.len();
             	    self.unwind_chain(
 	            	blk,
                     	shashmap,
@@ -1012,8 +1004,9 @@ println!("{}", create_timestamp());
 	            	chain_to_unwind_ids,
   	            	force,
   	            	1,
-	            	chain_to_unwind_hashes.len(),
+	            	ctulen,
             	    );
+		    return;
 	        }
 	    }
 
@@ -1106,7 +1099,7 @@ println!("{}", create_timestamp());
                 //
                 let chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
                 let chain_to_unwind_idxs   :Vec<usize>   = vec![];
-                let chain_to_unwind_ids    :Vec<usize>   = vec![];
+                let chain_to_unwind_ids    :Vec<u32>   = vec![];
 
                 //
                 // TODO
@@ -1152,10 +1145,18 @@ println!("{}", create_timestamp());
 
     pub fn add_block_success(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 
+	println!("SUCCESS ADDING BLOCK");
+        Storage::write_block_to_disk(blk);
+	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
+	println!("lc: {:?}", i_am_the_longest_chain);
+	println!("\n\n\n");
+
     }
 
     pub fn add_block_failure(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 
+	println!("FAILURE ADDING BLOCK");
+	println!("\n\n\n");
     }
 
 

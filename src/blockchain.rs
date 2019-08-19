@@ -1,10 +1,9 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
-
 use saito_primitives::block::{Block, BlockHeader};
 use saito_primitives::burnfee::BurnFee;
-
 use crate::storage::Storage;
+use crate::shashmap::Shashmap;
 
 //
 // The Blockchain Indices 
@@ -106,7 +105,7 @@ impl Blockchain {
     }
 
 
-    pub fn add_block(&mut self, blk: Block) {
+    pub fn add_block(&mut self, blk: Block, &shashmap: Shashmap) {
 
 	///////////////////
 	// SANITY CHECKS //
@@ -628,16 +627,29 @@ println!("LC POS SET!");
 	old_block_ids        :Vec<u32>
     ) {
 
+	//
+	// insert in shashmap
+	//
+        for h in 0..blk.body.transactions.len() {
+	  shashmap.insert_transaction(&blk.body.transactions[h]);
+	}
+
         //
-        // 
+        // most of our users 
         // 
 	self.add_block_success();
 
     }
 
-    pub fn add_block_success(&mut self) {}
+    pub fn add_block_success(&mut self) {
 
-    pub fn add_block_failure(&mut self) {}
+    }
+
+    pub fn add_block_failure(&mut self) {
+
+    }
+
+
 
     pub fn is_bsh_indexed(&mut self, bsh:[u8; 32] ) -> bool {
 	if self.bsh_lc_hmap.contains_key(&bsh) {

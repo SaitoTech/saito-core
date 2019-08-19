@@ -105,7 +105,7 @@ impl Blockchain {
     }
 
 
-    pub fn add_block(&mut self, blk: Block, &shashmap: Shashmap) {
+    pub fn add_block(&mut self, blk: Block, shashmap: &mut Shashmap) {
 
 	///////////////////
 	// SANITY CHECKS //
@@ -587,6 +587,7 @@ println!("LC POS SET!");
 	// add block to blockchain
 	self.validate(
 	    &blk,
+            shashmap,
 	    pos,
 	    i_am_the_longest_chain,
 	    shared_ancestor_bsh,
@@ -614,6 +615,7 @@ println!("LC POS SET!");
     pub fn validate(
 	&mut self, 
 	blk                  :&Block,
+        shashmap             :&mut Shashmap,
 	pos		     :usize,
 	i_am_the_longest_chain:u8,
 	shared_ancestor_bsh  :[u8;32],
@@ -630,8 +632,8 @@ println!("LC POS SET!");
 	//
 	// insert in shashmap
 	//
-        for h in 0..blk.body.transactions.len() {
-	  shashmap.insert_transaction(&blk.body.transactions[h]);
+        for tx in blk.body.txs.iter() {
+	  shashmap.insert_new_transaction(&tx);
 	}
 
         //
@@ -671,10 +673,5 @@ println!("LC POS SET!");
     }
 
 }
-
-
-
-
-
 
 

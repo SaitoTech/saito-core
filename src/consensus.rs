@@ -5,7 +5,7 @@ use crate::wallet::Wallet;
 use crate::shashmap::Shashmap;
 use crate::network::NetworkMessage;
 
-use saito_primitives::block::Block;
+// use saito_primitives::block::Block;
 
 use actix::*;
 
@@ -30,18 +30,15 @@ impl Consensus {
         
     pub fn init(&mut self ) {
         loop {
-
             if self.mempool.can_bundle_block(&self.wallet, self.blockchain.return_latest_block_header()) {
-
                 let blk = self.mempool.bundle_block(&self.wallet, self.blockchain.return_latest_block_header());
 		match blk {
 		    Some(blk) => {
-println!("BLOCK VALID?? : {:?}", blk.is_valid);
-                        self.blockchain.add_block(blk);
+                        println!("BLOCK VALID?? : {:?}", blk.is_valid);
+                        self.blockchain.add_block(blk, &mut self.shashmap);
 		    },
 		    None => {},
 		}	
-
 	    }
 
             let three_seconds = time::Duration::from_millis(3000);
@@ -70,7 +67,7 @@ impl Handler<NetworkMessage> for Consensus {
     fn handle(&mut self, msg: NetworkMessage, _: &mut Context<Self>) {
         match msg {
             NetworkMessage::IncomingBlock(blk) => {
-                self.blockchain.add_block(blk);
+                self.blockchain.add_block(blk, &mut self.shashmap);
             },
             NetworkMessage::IncomingTransaction(tx) => {
                 self.mempool.add_transaction(tx);

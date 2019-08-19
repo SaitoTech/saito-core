@@ -70,6 +70,10 @@ impl Transaction {
         self.body.from.push(slip)
     }
 
+    pub fn return_to_slips(&self) -> Vec<Slip> {
+        return self.body.to.clone();
+    }
+
     pub fn return_from_slips(&self) -> Vec<Slip> {
         return self.body.from.clone();
     }

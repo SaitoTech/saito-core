@@ -6,6 +6,8 @@ use std::str;
 use saito_primitives::block::Block;
 use saito_primitives::helper::create_timestamp;
 
+pub const BLOCKS_DIR: &str = "./data/blocks/";
+
 pub struct Storage {
     pub dest: String,
     pub blocks_dir: String,
@@ -19,13 +21,15 @@ impl Storage {
         }
     }
 
-    pub fn write_block_to_disk(&self, blk: Block) {
-        let mut filename = self.blocks_dir.clone();
+    pub fn write_block_to_disk(blk: Block) {
+        let mut filename = String::from(BLOCKS_DIR);
  
         filename.push_str(&create_timestamp().to_string());
-        filename.push_str(&"-");
-        filename.push_str(str::from_utf8(&blk.return_bsh()).unwrap());
+        //filename.push_str(&"-");
+        //filename.push_str(str::from_utf8(&blk.return_bsh()).unwrap());
         filename.push_str(&".sai");
+
+        println!("FILENAME: {}", filename);
 
         let encode: Vec<u8> = bincode::serialize(blk.return_body()).unwrap();
         let mut f = File::create(filename).unwrap();

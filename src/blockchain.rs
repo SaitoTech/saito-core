@@ -1,10 +1,10 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
-use saito_primitives::blockheader::{BlockHeader};
-use saito_primitives::block::{Block};
+use saito_primitives::block::{Block, BlockHeader};
 use saito_primitives::burnfee::BurnFee;
 
+use crate::storage::Storage;
 
 //
 // The Blockchain Indices 
@@ -372,7 +372,7 @@ println!(" ... AND PREHASH: {:?}", blk.body.prevbsh);
 				    //
             		            //await this.addBlockToBlockchainSuccess(newblock, pos, 0);
 				    println!("blockchain - block disconnected from chain");
-            		            return;
+                                    return
             		        } 
             		    } 
    		        }
@@ -587,7 +587,7 @@ println!("LC POS SET!");
 
 	// add block to blockchain
 	self.validate(
-	    blk,
+	    &blk,
 	    pos,
 	    i_am_the_longest_chain,
 	    shared_ancestor_bsh,
@@ -602,6 +602,8 @@ println!("LC POS SET!");
 	);
 
 
+        Storage::write_block_to_disk(blk);
+
 	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
         println!("ancestor: {:?}", shared_ancestor_pos);
@@ -612,7 +614,7 @@ println!("LC POS SET!");
 
     pub fn validate(
 	&mut self, 
-	blk                  :Block,
+	blk                  :&Block,
 	pos		     :usize,
 	i_am_the_longest_chain:u8,
 	shared_ancestor_bsh  :[u8;32],
@@ -633,14 +635,9 @@ println!("LC POS SET!");
 
     }
 
-    pub fn add_block_success(&mut self) {
-    }
+    pub fn add_block_success(&mut self) {}
 
-    pub fn add_block_failure(&mut self) {    
-    }
-    
-
-
+    pub fn add_block_failure(&mut self) {}
 
     pub fn is_bsh_indexed(&mut self, bsh:[u8; 32] ) -> bool {
 	if self.bsh_lc_hmap.contains_key(&bsh) {

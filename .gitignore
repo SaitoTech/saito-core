@@ -11,5 +11,5 @@
 **/*.rs.bk
 
 
-/data/*
+data/blocks/*.sai
 

@@ -1,31 +1,70 @@
 use std::{thread, time};
+use std::net::SocketAddr;
 
 use saito_primitives::slip::Slip;
 use saito_primitives::block::Block;
 use saito_primitives::crypto::PublicKey;
 use saito_primitives::transaction::Transaction;
 
-use crate::consensus::Consensus;
+use serde::{Serialize, Deserialize};
 
 use actix::*;
 
-//
-// Network
-//
-pub struct Network {
-    pub consensus_addr: Addr<Consensus>
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PeerId(PublicKey);
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PeerInfo {
+    pub id: PeerId,
+    pub addr: Option<SocketAddr>,
 }
 
-//
-// Implementing Actor trait for Network 
-//
+impl PeerInfo {
+    pub fn new(id: PeerId, addr: SocketAddr) -> PeerInfo {
+        return PeerInfo { id, addr: Some(addr) };
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum PeerType {
+    Lite,
+    FullNode,
+}
+
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum PeerStatus {
+    Connecting,
+    Connected,
+    Disconnected,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Peer {
+    pub peer_info: PeerInfo,
+    pub peer_type: PeerType, 
+    pub peer_status: PeerStatus, 
+}
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Handshake {
+    /// Protocol version.
+    pub version: u32,
+    /// Sender's peer id.
+    pub peer_id: PeerId,
+    /// Sender's listening addr.
+    pub listen_port: Option<u16>,
+}
+
+pub struct Network {
+    pub peers: Vec<Peer> ,
+    pub consensus_addr: Recipient<NetworkMessage>
+}
+
 impl Actor for Network {
     type Context = Context<Network>;
 } 
 
-//
-// Actix Message for sending data to Consensus
-// 
 #[derive(Message)]
 pub enum NetworkMessage {
     IncomingBlock(Block),

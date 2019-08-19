@@ -4,6 +4,8 @@ use saito_primitives::block::{Block, BlockHeader};
 use saito_primitives::burnfee::BurnFee;
 use crate::storage::Storage;
 use crate::shashmap::Shashmap;
+use saito_primitives::helper::{create_timestamp};
+
 
 //
 // The Blockchain Indices 
@@ -517,7 +519,6 @@ println!("LC POS SET!");
   	//
 	if i_am_the_longest_chain == 1 && self.index.blocks.len() > 1 {
 
-	    shared_ancestor_bsh  = self.index.blocks[shared_ancestor_pos].bsh;
 	    new_hash_to_hunt_for = blk.return_bsh();
 	    old_hash_to_hunt_for = self.index.blocks[last_lc_pos].bsh;
 	    new_block_hashes     = vec![];
@@ -571,7 +572,6 @@ println!("LC POS SET!");
 	    //
 	    // initialize
 	    //
-	    shared_ancestor_bsh  = [0;32];
 	    new_hash_to_hunt_for = [0;32];
 	    old_hash_to_hunt_for = [0;32];
 	    new_block_hashes     = vec![];
@@ -584,11 +584,14 @@ println!("LC POS SET!");
 
 	}
 
+
+
 	// add block to blockchain
 	self.validate(
-	    &blk,
+	    blk,
             shashmap,
 	    pos,
+	    shared_ancestor_pos,
 	    i_am_the_longest_chain,
 	    shared_ancestor_bsh,
 	    new_hash_to_hunt_for,
@@ -612,11 +615,15 @@ println!("LC POS SET!");
     }
 
 
+    //////////////////////////////////////////
+    // validate block and unwind / wind txs //
+    //////////////////////////////////////////
     pub fn validate(
 	&mut self, 
-	blk                  :&Block,
+	blk                  :Block,
         shashmap             :&mut Shashmap,
 	pos		     :usize,
+	shared_ancestor_pos  :usize,
 	i_am_the_longest_chain:u8,
 	shared_ancestor_bsh  :[u8;32],
 	new_hash_to_hunt_for :[u8;32],
@@ -629,25 +636,525 @@ println!("LC POS SET!");
 	old_block_ids        :Vec<u32>
     ) {
 
+println!("ABOUT TO SHAHSMAP!:");
+println!("{}", create_timestamp());
+
 	//
-	// insert in shashmap
+	// validate the block
+	//
+	if !blk.validate() {
+		//
+		// TODO
+		//
+		// -- force is not added as argment to this function, fix?
+		//
+	    self.add_block_failure(blk, pos, i_am_the_longest_chain, 0);
+	}
+
+	//
+	// block has validated, so we insert to shashmaps
+	//
+        for tx in blk.body.txs.iter() { shashmap.insert_new_transaction(&tx); }
+
+
+	let mut force: u8 = 0;
+
+
+	//
+	// unwind and wind
+	//
+	if old_block_hashes.len() > 0 {
+	    self.unwind_chain(
+	        blk,
+                shashmap,
+	        pos,
+	        i_am_the_longest_chain,
+	        shared_ancestor_pos,
+	        new_hash_to_hunt_for,
+	        old_hash_to_hunt_for,
+	        new_block_hashes,
+	        new_block_idxs,
+	        new_block_ids,
+	        old_block_hashes,
+	        old_block_idxs,
+	        old_block_ids,
+  		force,
+  		0,
+  		old_block_hashes.len()-1,
+	    ); 
+	} else {
+	    self.wind_chain(
+	        blk,
+                shashmap,
+	        pos,
+	        i_am_the_longest_chain,
+	        shared_ancestor_pos,
+	        new_hash_to_hunt_for,
+	        old_hash_to_hunt_for,
+	        new_block_hashes,
+	        new_block_idxs,
+	        new_block_ids,
+	        old_block_hashes,
+	        old_block_idxs,
+	        old_block_ids,
+  		force,
+  		0,
+  		0,
+	    ); 
+	}
+
+
+/******
+	//
+	// spend in shashmap
 	//
         for tx in blk.body.txs.iter() {
-	  shashmap.insert_new_transaction(&tx);
+	  shashmap.spend_transaction(&tx, blk.body.id);
+	}
+
+	//
+	// spend in shashmap
+	//
+        for tx in blk.body.txs.iter() {
+	  shashmap.check_slips(&tx);
 	}
 
         //
         // most of our users 
         // 
 	self.add_block_success();
+*****/
+println!("{}", create_timestamp());
 
     }
 
-    pub fn add_block_success(&mut self) {
+
+    pub fn unwind_chain(
+	        &mut self,
+		blk		     :Block,
+                shashmap             :&mut Shashmap,
+	        pos		     :usize,
+ 	        mut i_am_the_longest_chain:u8,
+	        shared_ancestor_pos  :usize,
+	        mut new_hash_to_hunt_for :[u8;32],
+	        mut old_hash_to_hunt_for :[u8;32],
+	        new_block_hashes     :Vec<[u8;32]>,
+	        new_block_idxs       :Vec<usize>,
+	        new_block_ids        :Vec<u32>,
+	        old_block_hashes     :Vec<[u8;32]>,
+	        old_block_idxs       :Vec<usize>,
+	        old_block_ids        :Vec<u32>,
+		mut force            :u8,
+         	mut resetting_flag   :u8,
+         	mut current_unwind_index :usize,
+    ) {
+
+
+        if old_block_hashes.len() > 0 {
+
+	    //
+	    // load old block or list of TX SLIPS
+	    //
+	    // await this.returnBlockByHash(old_block_hashes[current_unwind_index], 2);
+	    // if block_does_not_exist {
+
+		//
+		// request missing block
+		//
+
+		//
+		// exit, or rollback with last longest china
+		//
+
+	    //}
+
+	    //
+	    // block or data is legit, so run on_chain_reorganization
+	    // this should update the LC index as well
+	    // self.on_chain_reorganization(OLD_BLOCK_DATA);
+
+
+	    // if we are the node that produced this block, we catch any transactions
+	    // that were added to it. we want to add these transactions back into our
+	    // mempool once the chain has been rewritten if their inputs are still
+	    // valid.
+	    //
+	    //if (this.app.wallet.returnPublicKey() == blk.block.creator) {
+      		//
+      		// a block that we created is getting undone, so we push all of the
+      		// transactions into a special queue that exists in our mempool for
+      		// us to check once we have finished re-writing the chain.
+      		//
+      		//if (blk.transactions != null) {
+      		//  for (let i = 0; i < blk.transactions.length; i++) {
+      		//    console.log("RECOVERING TRANSACTIONS FROM PREVIOUS BLOCKS");
+      		//    console.log(blk.transactions[i]);
+      		//    this.app.mempool.recoverTransaction(blk.transactions[i]);
+      		//  }
+      		//}
+    	    //}
+
+
+	    //
+	    // unspend in shashmap
+	    //
+            //for tx in blk.body.txs.iter() {
+	    //    shashmap.spend_transaction(&tx, blk.body.id);
+	    //}
+	    //
+	    //
+	    // we either move on to our next block, or we hit
+	    // the end of the chain of blocks to unspend and
+	    // move on to wind the proposed new chain
+	    //
+	    if current_unwind_index == 0 {
+	        self.wind_chain(
+	            blk,
+                    shashmap,
+	            pos,
+	            i_am_the_longest_chain,
+	            shared_ancestor_pos,
+	            new_hash_to_hunt_for,
+	            old_hash_to_hunt_for,
+	            new_block_hashes,
+	            new_block_idxs,
+	            new_block_ids,
+	            old_block_hashes,
+	            old_block_idxs,
+	            old_block_ids,
+  		    force,
+  		    resetting_flag,
+		    0
+	        );
+	    } else {
+		self.unwind_chain(
+	            blk,
+                    shashmap,
+	            pos,
+	            i_am_the_longest_chain,
+	            shared_ancestor_pos,
+	            new_hash_to_hunt_for,
+	            old_hash_to_hunt_for,
+	            new_block_hashes,
+	            new_block_idxs,
+	            new_block_ids,
+	            old_block_hashes,
+	            old_block_idxs,
+	            old_block_ids,
+  		    force,
+  		    resetting_flag,
+		    current_unwind_index-1
+	        );
+	    }
+
+	} else {
+
+	    //
+	    // no more blocks to unwind
+	    //
+	    self.unwind_chain(
+	        blk,
+                shashmap,
+	        pos,
+	        i_am_the_longest_chain,
+	        shared_ancestor_pos,
+	        new_hash_to_hunt_for,
+	        old_hash_to_hunt_for,
+	        new_block_hashes,
+	        new_block_idxs,
+	        new_block_ids,
+	        old_block_hashes,
+	        old_block_idxs,
+	        old_block_ids,
+  	        force,
+  	        resetting_flag,
+	        0
+	    );
+
+	}
+
+    } // end of unwind_chain
+
+
+
+    pub fn wind_chain(
+	        &mut self,
+	        blk		     :Block,
+                shashmap             :&mut Shashmap,
+	        pos		     :usize,
+ 	        i_am_the_longest_chain:u8,
+	        shared_ancestor_pos  :usize,
+	        new_hash_to_hunt_for :[u8;32],
+	        old_hash_to_hunt_for :[u8;32],
+	        new_block_hashes     :Vec<[u8;32]>,
+	        new_block_idxs       :Vec<usize>,
+	        new_block_ids        :Vec<u32>,
+	        old_block_hashes     :Vec<[u8;32]>,
+	        old_block_idxs       :Vec<usize>,
+	        old_block_ids        :Vec<u32>,
+		mut force            :u8,
+         	mut resetting_flag   :u8,
+         	mut current_wind_index :usize,
+    ) {
+
+
+	let this_block_hash = new_block_hashes[current_wind_index];
+
+  	//
+  	// we have not saved the latest block to disk yet, so
+  	// there's no need to go through the delay of opening
+  	// files from disk.
+  	//
+  	if this_block_hash == blk.return_bsh() {
+
+            if blk.validate() {
+
+                //
+      	 	// we do not handle onChainReorganization for everything
+      		// here as we do for older blocks. the reason for this is
+      		// that the block is not yet saved to disk.
+      		//
+      		// onChainReorganization is run on addBlockToBlockchainSuccess
+      		//
+	        // spend in shashmap
+	        //
+                //for tx in blk.body.txs.iter() {
+	        //    shashmap.spend_transaction(&tx, blk.body.id);
+	        //}
+
+	        //
+      	        self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+		//
+                return;
+
+            } else {
+
+                if current_wind_index == 0 {
+
+            	    // this is the first block we have tried to add
+            	    // and so we can just roll out the older chain
+            	    // again as it is known good.
+            	    //
+            	    // note that old and new hashes are swapped
+            	    // and the old chain is set as null because
+            	    // we won't move back to it. we also set the
+            	    // resetting_flag to 1 so we know to fork
+            	    // into add_block_failure
+            	    //
+	    	    if old_block_hashes.len() > 0 {
+                        self.wind_chain(
+                    	    blk,
+                    	    shashmap,
+                    	    pos,
+                    	    i_am_the_longest_chain,
+                    	    shared_ancestor_pos,
+                    	    new_hash_to_hunt_for,
+                    	    old_hash_to_hunt_for,
+                    	    new_block_hashes,
+                    	    new_block_idxs,
+                    	    new_block_ids,
+                    	    old_block_hashes,
+                    	    old_block_idxs,
+                    	    old_block_ids,
+                    	    force,
+                    	    1,
+                    	    0
+                        );
+		        return;
+	    	    } else {
+		        self.add_block_failure(blk, pos, i_am_the_longest_chain, force);
+		        return;
+	    	    }
+	    	} else {
+
+            	    //
+            	    // we need to unwind some of our previously
+            	    // added blocks from the new chain. so we
+            	    // swap our hashes to wind/unwind.
+            	    //
+            	    let chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
+            	    let chain_to_unwind_idxs   :Vec<usize>   = vec![];
+            	    let chain_to_unwind_ids    :Vec<usize>   = vec![];
+
+	    	    // 
+	    	    // TODO 
+	    	    // 
+	    	    // vector splicing would be easier
+	    	    // 
+       	    	    for h in (current_wind_index)..new_block_hashes.len() {
+	    	        chain_to_unwind_hashes.push(new_block_hashes[h]);
+	    	    }
+       	    	    for h in (current_wind_index)..new_block_hashes.len() {
+	    	        chain_to_unwind_idxs.push(new_block_idxs[h]);
+	    	    }
+       	    	    for h in (current_wind_index)..new_block_hashes.len() {
+	    	        chain_to_unwind_ids.push(new_block_ids[h]);
+	    	    }
+
+            	    //
+            	    // unwind NEW and wind OLD
+            	    //
+            	    // note that we are setting the resetting_flag to 1
+            	    //
+            	    self.unwind_chain(
+	            	blk,
+                    	shashmap,
+	            	pos,
+	            	i_am_the_longest_chain,
+	            	shared_ancestor_pos,
+	            	new_hash_to_hunt_for,
+	            	old_hash_to_hunt_for,
+	            	old_block_hashes,
+	            	old_block_idxs,
+	            	old_block_ids,
+	            	chain_to_unwind_hashes,
+	            	chain_to_unwind_idxs,
+	            	chain_to_unwind_ids,
+  	            	force,
+  	            	1,
+	            	chain_to_unwind_hashes.len(),
+            	    );
+	        }
+	    }
+
+        } else {
+ 
+	    // rename -- not blk because it
+    	    //var blk = await this.returnBlockByHash(new_block_hashes[current_wind_index], 2);
+            //if (blk == null) {
+
+            self.add_block_failure(blk, pos, i_am_the_longest_chain, force);
+            return;
+
+        }
+
+
+        if blk.validate() {
+
+	    //
+	    // on chain reorganization
+	    //
+            //self.on_chain_reorganization();
+
+            //
+            // spend in shashmap
+            //
+            //for tx in blk.body.txs.iter() {
+            //    shashmap.spend_transaction(&tx, blk.body.id);
+            //}
+
+      	    if current_wind_index == new_block_idxs.len()-1 {
+        	if resetting_flag == 0 {
+       	   	    self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+        	} else {
+       	   	    self.add_block_failure(blk, pos, i_am_the_longest_chain, force);
+        	}
+      	    } else {
+
+            	self.unwind_chain(
+	            blk,
+                    shashmap,
+	            pos,
+	            i_am_the_longest_chain,
+	            shared_ancestor_pos,
+	            new_hash_to_hunt_for,
+	            old_hash_to_hunt_for,
+	            new_block_hashes,
+	            new_block_idxs,
+	            new_block_ids,
+	            old_block_hashes,
+	            old_block_idxs,
+	            old_block_ids,
+  	            force,
+  	            1,
+	            current_wind_index+1,
+            	);
+		return;
+	    }
+
+       	    self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+
+	} else {
+
+	    if current_wind_index == 0 {
+
+                self.wind_chain(
+	            blk,
+                    shashmap,
+	            pos,
+	            i_am_the_longest_chain,
+	            shared_ancestor_pos,
+	            new_hash_to_hunt_for,
+	            old_hash_to_hunt_for,
+	            old_block_hashes,
+	            old_block_idxs,
+	            old_block_ids,
+	            vec![],
+	            vec![],
+	            vec![],
+  	            force,
+  	            1,
+	            0,
+            	);
+
+	    } else {
+
+                //
+                // we need to unwind some of our previously
+                // added blocks from the new chain. so we
+                // swap our hashes to wind/unwind.
+                //
+                let chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
+                let chain_to_unwind_idxs   :Vec<usize>   = vec![];
+                let chain_to_unwind_ids    :Vec<usize>   = vec![];
+
+                //
+                // TODO
+                //
+                // vector splicing would be easier
+                //
+                for h in (current_wind_index)..new_block_hashes.len() {
+                    chain_to_unwind_hashes.push(new_block_hashes[h]);
+                }
+                for h in (current_wind_index)..new_block_hashes.len() {
+                    chain_to_unwind_idxs.push(new_block_idxs[h]);
+                }
+                for h in (current_wind_index)..new_block_hashes.len() {
+                    chain_to_unwind_ids.push(new_block_ids[h]);
+                }
+
+                //
+                // unwind NEW and wind OLD
+                //
+                // note that we are setting the resetting_flag to 1
+                //
+                self.unwind_chain(
+                    blk,
+                    shashmap,
+                    pos,
+                    i_am_the_longest_chain,
+                    shared_ancestor_pos,
+                    new_hash_to_hunt_for,
+                    old_hash_to_hunt_for,
+                    old_block_hashes,
+                    old_block_idxs,
+                    old_block_ids,
+                    chain_to_unwind_hashes,
+                    chain_to_unwind_idxs,
+                    chain_to_unwind_ids,
+                    force,
+                    1,
+                    chain_to_unwind_hashes.len(),
+                );
+	    }
+	}
+    }
+
+    pub fn add_block_success(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 
     }
 
-    pub fn add_block_failure(&mut self) {
+    pub fn add_block_failure(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 
     }
 

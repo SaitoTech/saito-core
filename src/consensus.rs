@@ -36,6 +36,7 @@ impl Consensus {
                 let blk = self.mempool.bundle_block(&self.wallet, self.blockchain.return_latest_block_header());
 		match blk {
 		    Some(blk) => {
+println!("BLOCK VALID?? : {:?}", blk.is_valid);
                         self.blockchain.add_block(blk);
 		    },
 		    None => {},

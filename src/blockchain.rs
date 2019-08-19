@@ -116,6 +116,7 @@ impl Blockchain {
 	// check block is superficially valid
 	//
 	if blk.is_valid == 0 {
+println!("INVALID BLK PREVHASH: {:?}", blk.body.prevbsh);
 	    println!("block is not valid - terminating add_block in blockchain...");
 	    return;
 	}
@@ -240,6 +241,9 @@ impl Blockchain {
 	// bf / ts / prevbsh / bsh / bid
 	//
 	//
+println!("INSERTING BLOCK WITH HASH: {:?}", blk.return_bsh());
+println!(" ... AND PREHASH: {:?}", blk.body.prevbsh);
+
         let block_header_entry = BlockHeader::new(blk.body.bf.current, blk.return_bsh(), blk.body.prevbsh, blk.body.id, blk.body.ts);
 
 	//
@@ -480,9 +484,9 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	    self.last_bid  = self.index.blocks[pos].bid;
   	    self.lc_pos = pos;
 	    self.lc_pos_set = true;
+println!("LC POS SET!");
 
         }
-
 
 	//
 	// old and new chains
@@ -601,6 +605,7 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
         println!("ancestor: {:?}", shared_ancestor_pos);
+	println!("\n\n\n");
 
     }
 

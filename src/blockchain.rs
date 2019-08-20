@@ -281,7 +281,7 @@ println!(" ... AND PREHASH: {:?}", blk.body.prevbsh);
     	    } else {
       		i_am_the_longest_chain = 1;
     	    }
-
+            println!("ARE WE THE LONGEST CHAIN? {}", i_am_the_longest_chain);
 	} else {
 
 	    if blk.body.id >= self.index.blocks[self.lc_pos].bid {
@@ -494,7 +494,7 @@ println!("LC POS SET!");
 	//
 	let mut shared_ancestor_bsh:  [u8;32];
 	let mut new_hash_to_hunt_for: [u8;32];
-	let mut old_hash_to_hunt_for: [u8;32];
+	let mut old_hash_to_hunt_for: Option<[u8;32]>;
 	let mut new_block_hashes:     Vec<[u8;32]>;
 	let mut new_block_idxs:       Vec<usize>;
 	let mut new_block_ids:        Vec<u32>;
@@ -517,10 +517,22 @@ println!("LC POS SET!");
   	// longest_chain of 0. This is only an issue with the first
   	// block.
   	//
+        if i_am_the_longest_chain == 1 && self.index.blocks.len() == 1 {
+            self.add_block_success(blk, pos, 1, 1);
+            return;
+        } 
+        
 	if i_am_the_longest_chain == 1 && self.index.blocks.len() > 1 {
+           
+            let old_hash: Option<[u8; 32]>;
+            if last_lc_pos == pos { 
+                old_hash = None; 
+            } else {
+                old_hash = Some(self.index.blocks[last_lc_pos].bsh);
+            }
 
 	    new_hash_to_hunt_for = blk.return_bsh();
-	    old_hash_to_hunt_for = self.index.blocks[last_lc_pos].bsh;
+	    old_hash_to_hunt_for = old_hash;
 	    new_block_hashes     = vec![];
 	    new_block_idxs       = vec![];
 	    new_block_ids        = vec![];
@@ -531,8 +543,9 @@ println!("LC POS SET!");
 	    //
 	    // our block builds on the longest chain
 	    //
-	    if blk.body.prevbsh == old_hash_to_hunt_for {
-	        new_block_hashes.push(self.index.blocks[pos].bsh);
+	    if blk.body.prevbsh == old_hash_to_hunt_for.unwrap() || None == old_hash_to_hunt_for {
+	        println!("ADDING INFO TO NEW_BLOCK_INDEXES");
+                new_block_hashes.push(self.index.blocks[pos].bsh);
 	        new_block_ids.push(self.index.blocks[pos].bid);
 	        new_block_idxs.push(pos);
 	    }
@@ -543,8 +556,8 @@ println!("LC POS SET!");
 	    else {
 
 	        for j in ((shared_ancestor_pos+1)..(self.index.blocks.len())).rev() {
-	            if self.index.blocks[j].bsh == old_hash_to_hunt_for {
-          		old_hash_to_hunt_for = self.index.blocks[j].prevbsh;
+	            if self.index.blocks[j].bsh == old_hash_to_hunt_for.unwrap() {
+          		old_hash_to_hunt_for = Some(self.index.blocks[j].prevbsh);
           		old_block_hashes.push(self.index.blocks[j].bsh);
           		old_block_ids.push(self.index.blocks[j].bid);
           		old_block_idxs.push(j);
@@ -572,8 +585,9 @@ println!("LC POS SET!");
 	    //
 	    // initialize
 	    //
+            println!("we are not the longest chain (?)");
 	    new_hash_to_hunt_for = [0;32];
-	    old_hash_to_hunt_for = [0;32];
+	    old_hash_to_hunt_for = Some([0;32]);
 	    new_block_hashes     = vec![];
 	    new_block_idxs       = vec![];
 	    new_block_ids        = vec![];
@@ -617,7 +631,7 @@ println!("LC POS SET!");
 	shared_ancestor_pos  :usize,
 	i_am_the_longest_chain:u8,
 	new_hash_to_hunt_for :[u8;32],
-	old_hash_to_hunt_for :[u8;32],
+	old_hash_to_hunt_for :Option<[u8;32]>,
 	new_block_hashes     :Vec<[u8;32]>,
 	new_block_idxs       :Vec<usize>,
 	new_block_ids        :Vec<u32>,
@@ -632,7 +646,7 @@ println!("{}", create_timestamp());
 	//
 	// validate the block
 	//
-	if !blk.validate() {
+	if !self.validate_block(&blk) {
 		//
 		// TODO
 		//
@@ -728,7 +742,7 @@ println!("{}", create_timestamp());
  	 mut i_am_the_longest_chain:u8,
 	 shared_ancestor_pos  :usize,
 	 mut new_hash_to_hunt_for :[u8;32],
-	 mut old_hash_to_hunt_for :[u8;32],
+	 mut old_hash_to_hunt_for :Option<[u8;32]>,
 	 new_block_hashes     :Vec<[u8;32]>,
 	 new_block_idxs       :Vec<usize>,
 	 new_block_ids        :Vec<u32>,
@@ -876,7 +890,7 @@ println!("{}", create_timestamp());
         i_am_the_longest_chain:u8,
         shared_ancestor_pos  :usize,
         new_hash_to_hunt_for :[u8;32],
-        old_hash_to_hunt_for :[u8;32],
+        old_hash_to_hunt_for :Option<[u8;32]>,
         new_block_hashes     :Vec<[u8;32]>,
         new_block_idxs       :Vec<usize>,
         new_block_ids        :Vec<u32>,
@@ -888,7 +902,7 @@ println!("{}", create_timestamp());
         mut current_wind_index :usize,
     ) {
 
-
+        println!("CURRENT WIND INDEX: {}", current_wind_index);
 	let this_block_hash = new_block_hashes[current_wind_index];
 
   	//
@@ -898,7 +912,7 @@ println!("{}", create_timestamp());
   	//
   	if this_block_hash == blk.return_bsh() {
 
-            if blk.validate() {
+            if self.validate_block(&blk) {
 
                 //
       	 	// we do not handle onChainReorganization for everything
@@ -1022,7 +1036,7 @@ println!("{}", create_timestamp());
         }
 
 
-        if blk.validate() {
+        if self.validate_block(&blk) {
 
 	    //
 	    // on chain reorganization
@@ -1159,7 +1173,9 @@ println!("{}", create_timestamp());
 	println!("\n\n\n");
     }
 
-
+    pub fn validate_block(&self, blk: &Block) -> bool {
+        return true;
+    }
 
     pub fn is_bsh_indexed(&mut self, bsh:[u8; 32] ) -> bool {
 	if self.bsh_lc_hmap.contains_key(&bsh) {
@@ -1181,5 +1197,4 @@ println!("{}", create_timestamp());
     }
 
 }
-
 

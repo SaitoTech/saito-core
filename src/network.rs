@@ -57,7 +57,7 @@ pub struct Handshake {
 }
 
 pub struct Network {
-    pub peers: Vec<Peer> ,
+//    pub peers: Vec<Peer> ,
     pub consensus_addr: Recipient<NetworkMessage>
 }
 

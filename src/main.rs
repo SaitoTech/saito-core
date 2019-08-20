@@ -23,7 +23,7 @@ fn main() {
     // Instantiate
     //
     let mut consensus = Consensus::new();
-    let consensus_addr = consensus.clone().start();
+    let consensus_addr = consensus.clone().start().recipient();
     let network = Network { consensus_addr };
     let runtime = Runtime::new();
     let publickey = consensus.wallet.return_publickey();

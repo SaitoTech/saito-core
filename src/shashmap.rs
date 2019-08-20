@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use saito_primitives::transaction::Transaction;
+use saito_primitives::slip::Slip;
 
 
 #[derive(Clone)]
@@ -25,6 +26,17 @@ impl Shashmap {
 	}
     }
 
+    pub fn check_slips(&mut self, tx: &Transaction) {
+	println!("TO SLIPS: ");
+	for to in tx.return_to_slips().iter() {
+	    println!("{:?}", self.hashmap.get(&to.return_signature_source()));
+	}
+	println!("TO SLIPS: ");
+	for from in tx.return_from_slips().iter() {
+	    println!("{:?}", self.hashmap.get(&from.return_signature_source()));
+	}
+    }
+
     pub fn spend_transaction(&mut self, tx: &Transaction, _bid: u32) {
 	for to in tx.return_from_slips().iter() {
 	    self.hashmap.insert(to.return_signature_source(), _bid as i64);
@@ -35,6 +47,14 @@ impl Shashmap {
 	for to in tx.return_to_slips().iter() {
 	    self.hashmap.insert(to.return_signature_source(), -1);
 	}
+    }
+
+    pub fn spend_slip(&mut self, slip: &Slip, _bid: u32) {
+	self.hashmap.insert(slip.return_signature_source(), _bid as i64);
+    }
+
+    pub fn unspend_slip(&mut self, slip: &Slip, _bid: u32) {
+	self.hashmap.insert(slip.return_signature_source(), -1);
     }
 
     pub fn return_value(&self, slip_index: Vec<u8>) -> Option<&i64> {

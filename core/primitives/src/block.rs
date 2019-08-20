@@ -119,5 +119,10 @@ impl Block {
         return output;
     }
 
+
+    pub fn validate(&mut self) -> bool {
+	return true;
+    }
+
 }
 

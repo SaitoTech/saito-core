@@ -23,9 +23,6 @@ impl Shashmap {
 	for to in tx.return_to_slips().iter() {
 	    self.hashmap.insert(to.return_signature_source(), -1);
 	}
-	for from in tx.return_from_slips().iter() {
-	    self.hashmap.insert(from.return_signature_source(), -1);
-	}
     }
 
     pub fn spend_transaction(&mut self, tx: &Transaction, _bid: u32) {

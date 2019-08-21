@@ -1,6 +1,8 @@
 use std::mem::transmute;
 use serde::{Serialize, Deserialize};
 
+use data_encoding::HEXLOWER;
+
 use crate::crypto::{hash, PublicKey};
 use crate::helper::{create_timestamp};
 use crate::transaction::Transaction;
@@ -88,6 +90,16 @@ impl Block {
         };
     }
 
+    pub fn create_from_block_body(body: BlockBody) -> Block {
+        return Block {
+	    body:      body,
+	    is_valid:  0,
+	    mintid:    0,
+	    maxtid:    0,
+	    bsh:       [0; 32],
+        };
+    }
+
     pub fn header(&self) -> BlockHeader {
         return BlockHeader::new(
             self.body.bf.start,
@@ -127,6 +139,10 @@ impl Block {
         hash(data, &mut output);
 
         return output;
+    }
+
+    pub fn return_bsh_as_hex(&self) -> String {
+        return HEXLOWER.encode(&self.return_bsh());
     }
 
 }

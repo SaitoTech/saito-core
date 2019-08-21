@@ -649,7 +649,9 @@ impl Blockchain {
 
 
         if old_block_hashes.len() > 0 {
-
+            // TODO, handle block not found result with Option 
+            
+            let old_blk = Storage::read_block_from_disk(old_block_hashes[current_unwind_index]);
 	    //
 	    // load old block or list of TX SLIPS
 	    //
@@ -852,12 +854,6 @@ impl Blockchain {
        	    	    for h in (current_wind_index)..new_block_hashes.len() {
 	    	        chain_to_unwind_hashes.push(new_block_hashes[h]);
 	    	    }
-       	    	    for h in (current_wind_index)..new_block_hashes.len() {
-	    	        chain_to_unwind_idxs.push(new_block_idxs[h]);
-	    	    }
-       	    	    for h in (current_wind_index)..new_block_hashes.len() {
-	    	        chain_to_unwind_ids.push(new_block_ids[h]);
-	    	    }
 
             	    //
             	    // unwind NEW and wind OLD
@@ -909,7 +905,7 @@ impl Blockchain {
             //    shashmap.spend_transaction(&tx, blk.body.id);
             //}
 
-      	    if current_wind_index == new_block_idxs.len()-1 {
+      	    if current_wind_index == new_block_hashes.len() - 1 {
         	if resetting_flag == 0 {
        	   	    self.add_block_success(blk, pos, i_am_the_longest_chain, force);
         	} else {
@@ -967,12 +963,6 @@ impl Blockchain {
                 //
                 for h in (current_wind_index)..new_block_hashes.len() {
                     chain_to_unwind_hashes.push(new_block_hashes[h]);
-                }
-                for h in (current_wind_index)..new_block_hashes.len() {
-                    chain_to_unwind_idxs.push(new_block_idxs[h]);
-                }
-                for h in (current_wind_index)..new_block_hashes.len() {
-                    chain_to_unwind_ids.push(new_block_ids[h]);
                 }
 
                 //

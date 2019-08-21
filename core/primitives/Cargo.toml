@@ -18,3 +18,4 @@ base58 = '0.1.0'
 merkle = '1.10.0'
 bincode = "1.1.4"
 ring = "^0.13.0"
+data-encoding = '2.1.2'

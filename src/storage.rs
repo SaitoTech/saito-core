@@ -3,7 +3,9 @@ use std::fs::{File};
 use std::io::prelude::*;
 use std::str;
 
-use saito_primitives::block::Block;
+use data_encoding::HEXLOWER;
+
+use saito_primitives::block::{Block, BlockBody};
 use saito_primitives::helper::create_timestamp;
 
 pub const BLOCKS_DIR: &str = "./data/blocks/";
@@ -24,9 +26,10 @@ impl Storage {
     pub fn write_block_to_disk(blk: Block) {
         let mut filename = String::from(BLOCKS_DIR);
  
-        filename.push_str(&create_timestamp().to_string());
+        //filename.push_str(&create_timestamp().to_string());
         //filename.push_str(&"-");
-        //filename.push_str(str::from_utf8(&blk.return_bsh()).unwrap());
+        
+        filename.push_str(&blk.return_bsh_as_hex());
         filename.push_str(&".sai");
 
         println!("FILENAME: {}", filename);
@@ -36,12 +39,15 @@ impl Storage {
         f.write_all(&encode[..]).unwrap();
     }
 
-    pub fn read_block_from_disk(&self, path: &Path) -> Block {
+    pub fn read_block_from_disk(bsh: [u8; 32]) -> Block {
         let mut encoded = Vec::<u8>::new();
-        let mut r = File::open(path).expect("Could not find block at this location");
+        let mut filename = String::from(BLOCKS_DIR);
+        filename.push_str(&HEXLOWER.encode(&bsh));
+        let mut r = File::open(filename).expect("Could not find block at this location");
 
         r.read_to_end(&mut encoded).unwrap();
+        let body: BlockBody = bincode::deserialize(&encoded[..]).unwrap();
  
-        return bincode::deserialize(&encoded[..]).unwrap();
+        return Block::create_from_block_body(body);
     }
 }

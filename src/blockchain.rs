@@ -512,6 +512,9 @@ println!("LC POS SET!");
   	//
         if i_am_the_longest_chain == 1 && self.index.blocks.len() == 1 {
             self.add_block_success(blk, pos, 1, 1);
+            // TODO:
+            
+            // need to add slips to shashmap here
             return;
         } 
         
@@ -811,7 +814,7 @@ println!("LC POS SET!");
 	    //
 	    // no more blocks to unwind
 	    //
-	    self.unwind_chain(
+	    self.wind_chain(
 	        blk,
                 shashmap,
 	        pos,

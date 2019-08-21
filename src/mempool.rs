@@ -53,7 +53,6 @@ impl Mempool {
 
     pub fn bundle_block (&mut self, wallet: &Wallet, block_header: BlockHeader) -> Option<Block> {
         let mut block = Block::new(wallet.return_publickey(), block_header.bsh);
-	let mut tx = Transaction::new();
         block.set_transactions(&mut self.transactions);
         block.is_valid = 1;
 	self.clear_transactions();

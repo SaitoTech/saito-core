@@ -78,7 +78,6 @@ impl BlockBody {
 
 
 impl Block {
-
     pub fn new(creator: PublicKey, prevbsh: [u8;32]) -> Block {
         return Block {
 	    body:      BlockBody::new(creator, prevbsh),
@@ -88,6 +87,17 @@ impl Block {
 	    bsh:       [0; 32],
         };
     }
+
+    pub fn header(&self) -> BlockHeader {
+        return BlockHeader::new(
+            self.body.bf.start,
+            self.return_bsh(),
+            self.body.prevbsh,
+            self.body.id,
+            self.body.ts,
+        );
+    }
+        
 
     pub fn add_transaction(&mut self, tx: Transaction) {
         self.body.txs.push(tx);
@@ -117,11 +127,6 @@ impl Block {
         hash(data, &mut output);
 
         return output;
-    }
-
-
-    pub fn validate(&mut self) -> bool {
-	return true;
     }
 
 }

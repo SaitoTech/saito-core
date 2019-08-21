@@ -1158,17 +1158,14 @@ println!("{}", create_timestamp());
     }
 
     pub fn add_block_success(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
-
 	println!("SUCCESS ADDING BLOCK");
         Storage::write_block_to_disk(blk);
 	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
 	println!("\n\n\n");
-
     }
 
     pub fn add_block_failure(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
-
 	println!("FAILURE ADDING BLOCK");
 	println!("\n\n\n");
     }
@@ -1192,9 +1189,131 @@ println!("{}", create_timestamp());
 	return self.index.blocks[self.lc_pos].clone();
     }
 
+    pub fn return_index_length(&self) -> usize {
+        return self.index.blocks.len();
+    }
+
     pub fn return_heartbeat(&self) -> u64 {
         return 100_000;
     }
 
+}
+
+//pub struct BlockHeader {
+//    pub bf:  f32,
+//    pub bsh: [u8;32],
+//    pub prevbsh: [u8;32],
+//    pub bid: u32,
+//    pub ts:  u64,
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use saito_primitives::slip::{Slip};
+    use saito_primitives::transaction::{Transaction};
+    use saito_primitives::crypto::generate_keys;
+
+    use std::{thread,time};
+    
+    #[test]
+    fn test_add_block() {
+        let (_, publickey) = generate_keys();
+
+        let mut blockchain = Blockchain::new();
+        let mut shashmap = Shashmap::new();
+
+        let mut blk = Block::new(publickey, [0; 32]);
+        blk.body.id = 1; 
+        blk.is_valid = 1;
+
+        let blk_header = blk.header();
+        blockchain.add_block(blk, &mut shashmap);
+
+        assert_eq!(blockchain.return_latest_block_header(), blk_header);
+    }
+
+    #[test]
+    fn test_validate_chain() {
+        // assert that the shashmap has all of the inputs provided in the blocks
+        let (_, publickey) = generate_keys();
+
+        let mut blockchain = Blockchain::new();
+        let mut shashmap = Shashmap::new();
+
+        let mut blk = Block::new(publickey, [0; 32]);
+
+        let mut tx: Transaction = Transaction::new();
+        let mut slip: Slip = Slip::new(publickey);
+        
+        slip.set_amt(200_000_000);
+
+        tx.add_from_slip(slip.clone());
+        
+        let mut transactions = vec![tx];
+
+        blk.set_transactions(&mut transactions);
+
+        blk.body.id = 1;
+        blk.is_valid = 1;
+
+        blockchain.add_block(blk, &mut shashmap);
+        
+        assert_eq!(shashmap.return_value(slip.return_signature_source()), Some(&1));
+    }
+
+    #[test]
+    fn test_wind_unwind_chain() {
+        let (_, publickey) = generate_keys();
+
+        let mut blockchain = Blockchain::new();
+        let mut shashmap = Shashmap::new();
+
+        let mut blk1 = Block::new(publickey, [0; 32]);
+        blk1.is_valid = 1;
+        blk1.body.id = 1;
+
+        let mut blk2 = Block::new(publickey, blk1.return_bsh());
+        blk2.is_valid = 1;
+        blk2.body.id = 2;
+
+        let mut blk3 = Block::new(publickey, blk2.return_bsh());
+        blk3.is_valid = 1;
+        blk3.body.id = 3;
+
+        // introduce our forks 
+        
+        let mut blk4 = Block::new(publickey, blk3.return_bsh());
+        blk4.is_valid = 1;
+        blk4.body.id = 4;
+        
+        thread::sleep(time::Duration::from_millis(1000));
+
+        // create fork for 6 and 7
+        let mut blk6 = Block::new(publickey, blk3.return_bsh());
+        blk6.is_valid = 1;
+        blk6.body.id = 4;
+
+        let mut blk5 = Block::new(publickey, blk4.return_bsh());
+        blk5.is_valid = 1;
+        blk5.body.id = 5;
+
+        thread::sleep(time::Duration::from_millis(1000));
+
+        let mut blk7 = Block::new(publickey, blk6.return_bsh());
+        blk7.is_valid = 1;
+        blk7.body.id = 5;
+
+        let mut blk8 = Block::new(publickey, blk7.return_bsh());
+        blk8.is_valid = 1;
+        blk8.body.id = 6;
+
+        let blocks = vec![blk1, blk2, blk3, blk4, blk6, blk5, blk7, blk8];
+
+        for blk in blocks {
+            blockchain.add_block(blk, &mut shashmap);
+        }
+
+        assert_eq!(blockchain.return_index_length(), 9);
+    }
 }
 

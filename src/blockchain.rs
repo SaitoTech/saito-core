@@ -478,7 +478,6 @@ println!("last to reset is: {:?}", self.index.blocks.len());
 	    self.last_bid  = self.index.blocks[pos].bid;
   	    self.lc_pos = pos;
 	    self.lc_pos_set = true;
-println!("LC POS SET!");
 
         }
 
@@ -489,11 +488,7 @@ println!("LC POS SET!");
 	let mut new_hash_to_hunt_for: [u8;32];
 	let mut old_hash_to_hunt_for: Option<[u8;32]>;
 	let mut new_block_hashes:     Vec<[u8;32]>;
-	let mut new_block_idxs:       Vec<usize>;
-	let mut new_block_ids:        Vec<u32>;
 	let mut old_block_hashes:     Vec<[u8;32]>;
-	let mut old_block_idxs:       Vec<usize>;
-	let mut old_block_ids:        Vec<u32>;
 
 
 	//
@@ -527,10 +522,6 @@ println!("LC POS SET!");
 	    new_hash_to_hunt_for = blk.return_bsh();
 	    old_hash_to_hunt_for = old_hash;
 	    new_block_hashes     = vec![];
-	    new_block_idxs       = vec![];
-	    new_block_ids        = vec![];
-    	    old_block_idxs       = vec![];
-    	    old_block_ids        = vec![];
 	    old_block_hashes     = vec![];
 
 	    //
@@ -539,8 +530,6 @@ println!("LC POS SET!");
 	    if blk.body.prevbsh == old_hash_to_hunt_for.unwrap() || None == old_hash_to_hunt_for {
 	        println!("ADDING INFO TO NEW_BLOCK_INDEXES");
                 new_block_hashes.push(self.index.blocks[pos].bsh);
-	        new_block_ids.push(self.index.blocks[pos].bid);
-	        new_block_idxs.push(pos);
 	    }
 
 	    //
@@ -552,25 +541,19 @@ println!("LC POS SET!");
 	            if self.index.blocks[j].bsh == old_hash_to_hunt_for.unwrap() {
           		old_hash_to_hunt_for = Some(self.index.blocks[j].prevbsh);
           		old_block_hashes.push(self.index.blocks[j].bsh);
-          		old_block_ids.push(self.index.blocks[j].bid);
-          		old_block_idxs.push(j);
         	    }
       		}
 
       		old_block_hashes.reverse();
-      		old_block_idxs.reverse();
 
 	        for j in ((shared_ancestor_pos+1)..(self.index.blocks.len())).rev() {
         	    if self.index.blocks[j].bsh == new_hash_to_hunt_for {
           		new_hash_to_hunt_for = self.index.blocks[j].prevbsh;
           		new_block_hashes.push(self.index.blocks[j].bsh);
-          		new_block_ids.push(self.index.blocks[j].bid);
-          		new_block_idxs.push(j);
         	    }
       		}
 
       		new_block_hashes.reverse();
-      		new_block_idxs.reverse();
 
 	    }
 	} else {
@@ -582,30 +565,19 @@ println!("LC POS SET!");
 	    new_hash_to_hunt_for = [0;32];
 	    old_hash_to_hunt_for = Some([0;32]);
 	    new_block_hashes     = vec![];
-	    new_block_idxs       = vec![];
-	    new_block_ids        = vec![];
-    	    old_block_idxs       = vec![];
-    	    old_block_ids        = vec![];
 	    old_block_hashes     = vec![];
 
 
 	}
 
 
-
-	// add block to blockchain
 	self.validate(
 	    blk,
             shashmap,
 	    pos,
-	    shared_ancestor_pos,
 	    i_am_the_longest_chain,
 	    new_block_hashes,
-	    new_block_idxs,
-	    new_block_ids,
 	    old_block_hashes,
-	    old_block_idxs,
-	    old_block_ids
 	);
 
     }
@@ -616,17 +588,12 @@ println!("LC POS SET!");
     //////////////////////////////////////////
     pub fn validate(
 	&mut self, 
-	mut blk              :Block,
-        shashmap             :&mut Shashmap,
-	pos		     :usize,
-	shared_ancestor_pos  :usize,
-	i_am_the_longest_chain:u8,
-	new_block_hashes     :Vec<[u8;32]>,
-	new_block_idxs       :Vec<usize>,
-	new_block_ids        :Vec<u32>,
-	old_block_hashes     :Vec<[u8;32]>,
-	old_block_idxs       :Vec<usize>,
-	old_block_ids        :Vec<u32>
+	mut blk                :Block,
+        shashmap               :&mut Shashmap,
+	pos		       :usize,
+	i_am_the_longest_chain :u8,
+	new_block_hashes       :Vec<[u8;32]>,
+	old_block_hashes       :Vec<[u8;32]>,
     ) {
 
 	//
@@ -661,13 +628,8 @@ println!("LC POS SET!");
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
-	        shared_ancestor_pos,
 	        new_block_hashes,
-	        new_block_idxs,
-	        new_block_ids,
 	        old_block_hashes,
-	        old_block_idxs,
-	        old_block_ids,
   		force,
   		0,
   		obhlen,
@@ -678,13 +640,8 @@ println!("LC POS SET!");
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
-	        shared_ancestor_pos,
 	        new_block_hashes,
-	        new_block_idxs,
-	        new_block_ids,
 	        old_block_hashes,
-	        old_block_idxs,
-	        old_block_ids,
   		force,
   		0,
   		0,
@@ -700,13 +657,8 @@ println!("LC POS SET!");
          shashmap             :&mut Shashmap,
 	 pos		      :usize,
  	 mut i_am_the_longest_chain:u8,
-	 shared_ancestor_pos  :usize,
 	 new_block_hashes     :Vec<[u8;32]>,
-	 new_block_idxs       :Vec<usize>,
-	 new_block_ids        :Vec<u32>,
 	 old_block_hashes     :Vec<[u8;32]>,
-	 old_block_idxs       :Vec<usize>,
-	 old_block_ids        :Vec<u32>,
 	 mut force            :u8,
          mut resetting_flag   :u8,
          mut current_unwind_index :usize,
@@ -776,13 +728,8 @@ println!("LC POS SET!");
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
-	            shared_ancestor_pos,
 	            new_block_hashes,
-	            new_block_idxs,
-	            new_block_ids,
 	            old_block_hashes,
-	            old_block_idxs,
-	            old_block_ids,
   		    force,
   		    resetting_flag,
 		    0
@@ -793,13 +740,8 @@ println!("LC POS SET!");
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
-	            shared_ancestor_pos,
 	            new_block_hashes,
-	            new_block_idxs,
-	            new_block_ids,
 	            old_block_hashes,
-	            old_block_idxs,
-	            old_block_ids,
   		    force,
   		    resetting_flag,
 		    current_unwind_index-1
@@ -811,26 +753,24 @@ println!("LC POS SET!");
 	    //
 	    // no more blocks to unwind
 	    //
-	    self.unwind_chain(
+	    self.wind_chain(
 	        blk,
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
-	        shared_ancestor_pos,
 	        new_block_hashes,
-	        new_block_idxs,
-	        new_block_ids,
 	        old_block_hashes,
-	        old_block_idxs,
-	        old_block_ids,
   	        force,
   	        resetting_flag,
 	        0
 	    );
-
 	}
-
     } // end of unwind_chain
+
+
+
+
+
 
 
 
@@ -840,19 +780,13 @@ println!("LC POS SET!");
         shashmap             :&mut Shashmap,
         pos		     :usize,
         i_am_the_longest_chain:u8,
-        shared_ancestor_pos  :usize,
         new_block_hashes     :Vec<[u8;32]>,
-        new_block_idxs       :Vec<usize>,
-        new_block_ids        :Vec<u32>,
         old_block_hashes     :Vec<[u8;32]>,
-        old_block_idxs       :Vec<usize>,
-        old_block_ids        :Vec<u32>,
 	mut force            :u8,
        	mut resetting_flag   :u8,
         mut current_wind_index :usize,
     ) {
 
-        println!("CURRENT WIND INDEX: {}", current_wind_index);
 	let this_block_hash = new_block_hashes[current_wind_index];
 
   	//
@@ -902,13 +836,8 @@ println!("LC POS SET!");
                     	    shashmap,
                     	    pos,
                     	    i_am_the_longest_chain,
-                    	    shared_ancestor_pos,
-                    	    new_block_hashes,
-                    	    new_block_idxs,
-                    	    new_block_ids,
                     	    old_block_hashes,
-                    	    old_block_idxs,
-                    	    old_block_ids,
+                    	    new_block_hashes,
                     	    force,
                     	    1,
                     	    0
@@ -929,6 +858,9 @@ println!("LC POS SET!");
             	    let mut chain_to_unwind_idxs   :Vec<usize>   = vec![];
             	    let mut chain_to_unwind_ids    :Vec<u32>     = vec![];
 
+	//
+	// remove previous added
+	//
 	    	    // 
 	    	    // TODO 
 	    	    // 
@@ -955,13 +887,8 @@ println!("LC POS SET!");
                     	shashmap,
 	            	pos,
 	            	i_am_the_longest_chain,
-	            	shared_ancestor_pos,
 	            	old_block_hashes,
-	            	old_block_idxs,
-	            	old_block_ids,
 	            	chain_to_unwind_hashes,
-	            	chain_to_unwind_idxs,
-	            	chain_to_unwind_ids,
   	            	force,
   	            	1,
 	            	ctulen,
@@ -982,6 +909,9 @@ println!("LC POS SET!");
         }
 
 
+	//
+	// should reference the block we are adding, not blk
+	// newblock.validateSlips not blk.validate_block
         if self.validate_block(&blk) {
 
 	    //
@@ -1009,13 +939,8 @@ println!("LC POS SET!");
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
-	            shared_ancestor_pos,
 	            new_block_hashes,
-	            new_block_idxs,
-	            new_block_ids,
 	            old_block_hashes,
-	            old_block_idxs,
-	            old_block_ids,
   	            force,
   	            1,
 	            current_wind_index+1,
@@ -1034,12 +959,7 @@ println!("LC POS SET!");
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
-	            shared_ancestor_pos,
 	            old_block_hashes,
-	            old_block_idxs,
-	            old_block_ids,
-	            vec![],
-	            vec![],
 	            vec![],
   	            force,
   	            1,
@@ -1082,13 +1002,8 @@ println!("LC POS SET!");
                     shashmap,
                     pos,
                     i_am_the_longest_chain,
-                    shared_ancestor_pos,
                     old_block_hashes,
-                    old_block_idxs,
-                    old_block_ids,
                     chain_to_unwind_hashes,
-                    chain_to_unwind_idxs,
-                    chain_to_unwind_ids,
                     force,
                     1,
                     chain_to_unwind_hashes.len(),

@@ -17,7 +17,7 @@ use saito_primitives::helper::{create_timestamp};
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockchainIndex {
-    blocks:      Vec<BlockHeader>,                  // blocks
+    blocks:      Vec<BlockHeader>,              // blocks
     //blocks:      Vec<Block>,                  // blocks
     //bsh:         Vec<[u8; 32]>,               // hashes
     //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
@@ -112,12 +112,10 @@ impl Blockchain {
 	///////////////////
 	// SANITY CHECKS //
 	///////////////////
-
 	//
 	// check block is superficially valid
 	//
 	if blk.is_valid == 0 {
-println!("INVALID BLK PREVHASH: {:?}", blk.body.prevbsh);
 	    println!("block is not valid - terminating add_block in blockchain...");
 	    return;
 	}
@@ -229,7 +227,6 @@ println!("INVALID BLK PREVHASH: {:?}", blk.body.prevbsh);
     	}
 
 
-
 	////////////////////
 	// insert indexes //
 	////////////////////
@@ -241,10 +238,6 @@ println!("INVALID BLK PREVHASH: {:?}", blk.body.prevbsh);
 	//
 	// bf / ts / prevbsh / bsh / bid
 	//
-	//
-println!("INSERTING BLOCK WITH HASH: {:?}", blk.return_bsh());
-println!(" ... AND PREHASH: {:?}", blk.body.prevbsh);
-
         let block_header_entry = BlockHeader::new(blk.body.bf.current, blk.return_bsh(), blk.body.prevbsh, blk.body.id, blk.body.ts);
 
 	//
@@ -281,7 +274,7 @@ println!(" ... AND PREHASH: {:?}", blk.body.prevbsh);
     	    } else {
       		i_am_the_longest_chain = 1;
     	    }
-            println!("ARE WE THE LONGEST CHAIN? {}", i_am_the_longest_chain);
+
 	} else {
 
 	    if blk.body.id >= self.index.blocks[self.lc_pos].bid {
@@ -607,8 +600,6 @@ println!("LC POS SET!");
 	    pos,
 	    shared_ancestor_pos,
 	    i_am_the_longest_chain,
-	    new_hash_to_hunt_for,
-	    old_hash_to_hunt_for,
 	    new_block_hashes,
 	    new_block_idxs,
 	    new_block_ids,
@@ -630,8 +621,6 @@ println!("LC POS SET!");
 	pos		     :usize,
 	shared_ancestor_pos  :usize,
 	i_am_the_longest_chain:u8,
-	new_hash_to_hunt_for :[u8;32],
-	old_hash_to_hunt_for :Option<[u8;32]>,
 	new_block_hashes     :Vec<[u8;32]>,
 	new_block_idxs       :Vec<usize>,
 	new_block_ids        :Vec<u32>,
@@ -639,9 +628,6 @@ println!("LC POS SET!");
 	old_block_idxs       :Vec<usize>,
 	old_block_ids        :Vec<u32>
     ) {
-
-println!("ABOUT TO SHAHSMAP!:");
-println!("{}", create_timestamp());
 
 	//
 	// validate the block
@@ -676,8 +662,6 @@ println!("{}", create_timestamp());
 	        pos,
 	        i_am_the_longest_chain,
 	        shared_ancestor_pos,
-	        new_hash_to_hunt_for,
-	        old_hash_to_hunt_for,
 	        new_block_hashes,
 	        new_block_idxs,
 	        new_block_ids,
@@ -695,8 +679,6 @@ println!("{}", create_timestamp());
 	        pos,
 	        i_am_the_longest_chain,
 	        shared_ancestor_pos,
-	        new_hash_to_hunt_for,
-	        old_hash_to_hunt_for,
 	        new_block_hashes,
 	        new_block_idxs,
 	        new_block_ids,
@@ -708,30 +690,8 @@ println!("{}", create_timestamp());
   		0,
 	    ); 
 	}
-
-
-/******
-	//
-	// spend in shashmap
-	//
-        for tx in blk.body.txs.iter() {
-	  shashmap.spend_transaction(&tx, blk.body.id);
-	}
-
-	//
-	// spend in shashmap
-	//
-        for tx in blk.body.txs.iter() {
-	  shashmap.check_slips(&tx);
-	}
-
-        //
-        // most of our users 
-        // 
-	self.add_block_success();
-*****/
-
     }
+
 
 
     pub fn unwind_chain(
@@ -741,8 +701,6 @@ println!("{}", create_timestamp());
 	 pos		      :usize,
  	 mut i_am_the_longest_chain:u8,
 	 shared_ancestor_pos  :usize,
-	 mut new_hash_to_hunt_for :[u8;32],
-	 mut old_hash_to_hunt_for :Option<[u8;32]>,
 	 new_block_hashes     :Vec<[u8;32]>,
 	 new_block_idxs       :Vec<usize>,
 	 new_block_ids        :Vec<u32>,
@@ -819,8 +777,6 @@ println!("{}", create_timestamp());
 	            pos,
 	            i_am_the_longest_chain,
 	            shared_ancestor_pos,
-	            new_hash_to_hunt_for,
-	            old_hash_to_hunt_for,
 	            new_block_hashes,
 	            new_block_idxs,
 	            new_block_ids,
@@ -838,8 +794,6 @@ println!("{}", create_timestamp());
 	            pos,
 	            i_am_the_longest_chain,
 	            shared_ancestor_pos,
-	            new_hash_to_hunt_for,
-	            old_hash_to_hunt_for,
 	            new_block_hashes,
 	            new_block_idxs,
 	            new_block_ids,
@@ -863,8 +817,6 @@ println!("{}", create_timestamp());
 	        pos,
 	        i_am_the_longest_chain,
 	        shared_ancestor_pos,
-	        new_hash_to_hunt_for,
-	        old_hash_to_hunt_for,
 	        new_block_hashes,
 	        new_block_idxs,
 	        new_block_ids,
@@ -889,8 +841,6 @@ println!("{}", create_timestamp());
         pos		     :usize,
         i_am_the_longest_chain:u8,
         shared_ancestor_pos  :usize,
-        new_hash_to_hunt_for :[u8;32],
-        old_hash_to_hunt_for :Option<[u8;32]>,
         new_block_hashes     :Vec<[u8;32]>,
         new_block_idxs       :Vec<usize>,
         new_block_ids        :Vec<u32>,
@@ -953,8 +903,6 @@ println!("{}", create_timestamp());
                     	    pos,
                     	    i_am_the_longest_chain,
                     	    shared_ancestor_pos,
-                    	    new_hash_to_hunt_for,
-                    	    old_hash_to_hunt_for,
                     	    new_block_hashes,
                     	    new_block_idxs,
                     	    new_block_ids,
@@ -979,7 +927,7 @@ println!("{}", create_timestamp());
             	    //
             	    let mut chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
             	    let mut chain_to_unwind_idxs   :Vec<usize>   = vec![];
-            	    let mut chain_to_unwind_ids    :Vec<u32>   = vec![];
+            	    let mut chain_to_unwind_ids    :Vec<u32>     = vec![];
 
 	    	    // 
 	    	    // TODO 
@@ -1008,8 +956,6 @@ println!("{}", create_timestamp());
 	            	pos,
 	            	i_am_the_longest_chain,
 	            	shared_ancestor_pos,
-	            	new_hash_to_hunt_for,
-	            	old_hash_to_hunt_for,
 	            	old_block_hashes,
 	            	old_block_idxs,
 	            	old_block_ids,
@@ -1064,8 +1010,6 @@ println!("{}", create_timestamp());
 	            pos,
 	            i_am_the_longest_chain,
 	            shared_ancestor_pos,
-	            new_hash_to_hunt_for,
-	            old_hash_to_hunt_for,
 	            new_block_hashes,
 	            new_block_idxs,
 	            new_block_ids,
@@ -1091,8 +1035,6 @@ println!("{}", create_timestamp());
 	            pos,
 	            i_am_the_longest_chain,
 	            shared_ancestor_pos,
-	            new_hash_to_hunt_for,
-	            old_hash_to_hunt_for,
 	            old_block_hashes,
 	            old_block_idxs,
 	            old_block_ids,
@@ -1141,8 +1083,6 @@ println!("{}", create_timestamp());
                     pos,
                     i_am_the_longest_chain,
                     shared_ancestor_pos,
-                    new_hash_to_hunt_for,
-                    old_hash_to_hunt_for,
                     old_block_hashes,
                     old_block_idxs,
                     old_block_ids,

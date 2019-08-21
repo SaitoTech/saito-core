@@ -18,29 +18,12 @@ use saito_primitives::helper::{create_timestamp};
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockchainIndex {
     blocks:      Vec<BlockHeader>,              // blocks
-    //blocks:      Vec<Block>,                  // blocks
-    //bsh:         Vec<[u8; 32]>,               // hashes
-    //prevbsh:     Vec<[u8; 32]>,               // hash of previous block
-    //bid:         Vec<u32>,                    // block id
-    //mintid:      Vec<u32>,
-    //maxtid:      Vec<u32>,
-    //ts:          Vec<u64>,                    // timestamps
-    //lc:          Vec<u8>,                     // is longest chain (0 = no, 1 = yes)
-    //bf:          Vec<f32>                     // burnfee per block
 }
 
 impl BlockchainIndex {
     pub fn new() -> BlockchainIndex {
         return BlockchainIndex {
             blocks:      vec![],                 // blocks
-            //bsh:         vec![],                 // hashes
-            //prevbsh:     vec![],                 // hash of previous block
-            //bid:         vec![],                 // block id
-            //mintid:      vec![],                 // min tid
-            //maxtid:      vec![],                 // max tid
-            //ts:          vec![],                 // timestamps
-            //lc:          vec![],                 // is longest chain (0 = no, 1 = yes)
-            //bf:          vec![]                  // burnfee per block
         };
     }
 }
@@ -438,9 +421,6 @@ impl Blockchain {
 	            // reset later blocks
 		    //
        	 	    for h in (pos+1)..self.index.blocks.len() {
-
-println!("resetting blockchain block off LC at: {:?}", h);
-println!("last to reset is: {:?}", self.index.blocks.len());
 
 			//
 			// reset LC hashmap

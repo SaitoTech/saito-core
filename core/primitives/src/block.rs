@@ -83,7 +83,7 @@ impl Block {
     pub fn new(creator: PublicKey, prevbsh: [u8;32]) -> Block {
         return Block {
 	    body:      BlockBody::new(creator, prevbsh),
-	    is_valid:  0,
+	    is_valid:  1,
 	    mintid:    0,
 	    maxtid:    0,
 	    bsh:       [0; 32],
@@ -93,7 +93,7 @@ impl Block {
     pub fn create_from_block_body(body: BlockBody) -> Block {
         return Block {
 	    body:      body,
-	    is_valid:  0,
+	    is_valid:  1,
 	    mintid:    0,
 	    maxtid:    0,
 	    bsh:       [0; 32],
@@ -146,4 +146,5 @@ impl Block {
     }
 
 }
+
 

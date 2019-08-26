@@ -38,15 +38,19 @@ impl Shashmap {
     }
 
     pub fn spend_transaction(&mut self, tx: &Transaction, _bid: u32) {
-	for to in tx.return_from_slips().iter() {
-	    self.hashmap.insert(to.return_signature_source(), _bid as i64);
+	for from in tx.return_from_slips().iter() {
+	    self.hashmap.insert(from.return_signature_source(), _bid as i64);
 	}
     }
 
-    pub fn unspend_transaction(&mut self, tx: &Transaction, _bid: u32) {
-	for to in tx.return_to_slips().iter() {
-	    self.hashmap.insert(to.return_signature_source(), -1);
+    pub fn unspend_transaction(&mut self, tx: &Transaction) {
+	for from in tx.return_from_slips().iter() {
+	    self.hashmap.insert(from.return_signature_source(), -1);
 	}
+
+        for to in tx.return_to_slips().iter() {
+            self.hashmap.remove(&to.return_signature_source());
+        }
     }
 
     pub fn spend_slip(&mut self, slip: &Slip, _bid: u32) {

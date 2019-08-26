@@ -42,7 +42,11 @@ impl Storage {
     pub fn read_block_from_disk(bsh: [u8; 32]) -> Block {
         let mut encoded = Vec::<u8>::new();
         let mut filename = String::from(BLOCKS_DIR);
+ 
         filename.push_str(&HEXLOWER.encode(&bsh));
+        filename.push_str(&".sai");
+
+        println!("ATTEMPTING TO FETCH BLOCK FROM DISK {}", filename);
         let mut r = File::open(filename).expect("Could not find block at this location");
 
         r.read_to_end(&mut encoded).unwrap();

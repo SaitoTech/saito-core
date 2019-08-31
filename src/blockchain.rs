@@ -297,11 +297,10 @@ impl Blockchain {
     		if blk.body.prevbsh == self.index.blocks[self.lc_pos].bsh {
         	    i_am_the_longest_chain = 1;
       		} else {
-
-		    //
+		    
+                    //
         	    // find the last shared ancestor
         	    //
-                    
                     let mut longest_chain = ChainNode::new(
                         self.lc_pos,
                         0,
@@ -310,7 +309,6 @@ impl Blockchain {
                         self.index.blocks[self.lc_pos].prevbsh,
                         [0; 32],
                     ); 
-                    
                     let mut new_chain = ChainNode::new(
                         pos,
                         0,
@@ -319,24 +317,7 @@ impl Blockchain {
                         self.index.blocks[pos].prevbsh,
                         [0; 32],
                     ); 
-
                     let mut search_node = ChainNode::default();
-                    
-        	    // let mut lchain_pos:       usize   = self.lc_pos;
-        	    // let mut nchain_pos:       usize   = pos;
-        	    // let mut lchain_len:       u32     = 0;
-        	    // let mut nchain_len:       u32     = 0;
-        	    // let mut lchain_bf:        f32     = self.index.blocks[lchain_pos].bf;
-        	    // let mut nchain_bf:        f32     = self.index.blocks[nchain_pos].bf;
-        	    // let mut lchain_ts:        u64     = self.index.blocks[lchain_pos].ts;
-        	    // let mut nchain_ts:        u64     = self.index.blocks[nchain_pos].ts;
-        	    // let mut lchain_prevbsh:   [u8;32] = self.index.blocks[lchain_pos].prevbsh;
-        	    // let mut nchain_prevbsh:   [u8;32] = self.index.blocks[nchain_pos].prevbsh;
-	            // let mut search_pos:       usize   = 0;
-        	    // let mut search_bf:        f32     = 0.0;
-        	    // let mut search_bsh:       [u8;32] = [0;32];
-        	    // let mut search_prevbsh:   [u8;32] = [0;32];
-		    
                     let mut search_completed: bool = false;
 
 	            if new_chain.ts >= longest_chain.ts {

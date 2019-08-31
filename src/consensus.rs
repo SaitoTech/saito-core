@@ -30,7 +30,7 @@ impl Consensus {
         
     pub fn init(&mut self ) {
         loop {
-            if self.mempool.can_bundle_block(&self.wallet, self.blockchain.return_latest_block_header()) {
+            if self.mempool.can_bundle_block(self.blockchain.return_latest_block_header()) {
                 let blk = self.mempool.bundle_block(&self.wallet, self.blockchain.return_latest_block_header());
 		match blk {
 		    Some(blk) => {
@@ -41,8 +41,8 @@ impl Consensus {
 		}	
 	    }
 
-            let three_seconds = time::Duration::from_millis(3000);
-            thread::sleep(three_seconds);
+            let one_second = time::Duration::from_millis(1000);
+            thread::sleep(one_second);
         } 
 
     }

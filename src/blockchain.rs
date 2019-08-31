@@ -28,6 +28,39 @@ impl BlockchainIndex {
     }
 }
 
+struct ChainNode {
+    pub pos: usize,
+    pub len: u32,
+    pub bf: f32,
+    pub ts: u64,
+    pub prevbsh: [u8; 32],
+    pub bsh: [u8; 32]
+}
+
+impl ChainNode {
+    pub fn new(
+        pos: usize,
+        len: u32,
+        bf: f32,
+        ts: u64,
+        prevbsh: [u8; 32],
+        bsh: [u8; 32]
+    ) -> ChainNode {
+        return ChainNode { pos, len, bf, ts,  prevbsh, bsh }
+    }
+
+    pub fn default() -> ChainNode {
+        return ChainNode {
+            pos: 0,
+            len: 0,
+            bf: 0.0,
+            ts: 0,
+            prevbsh: [0; 32],
+            bsh: [0; 32],
+        }
+    }
+}
+
 
 //
 // The Blockchain
@@ -163,10 +196,14 @@ impl Blockchain {
 	    // we update the lowest acceptable TS from the last
 	    // time the server was running if we aren't indexing
 	    // from the start.
+            //
+            // TODO:
+            //
+            // Load these variables in from Config
 	    //
-	    //if (this.app.options.blockchain != null) {
+	    // if (this.app.options.blockchain != null) {
       	    //    this.lowest_acceptable_ts = this.last_ts;
-            //}
+            // }
 
             if self.lowest_acceptable_ts == 0 {
                 self.lowest_acceptable_ts = blk.body.ts;
@@ -178,9 +215,9 @@ impl Blockchain {
 		//
 		// we do not update this if we are forcing blocks in
 		//
-		//if ( && !(force)) {
-      		    self.lowest_acceptable_ts = blk.body.ts;
-    	    	//}
+		// if ( && !(force)) {
+      	        self.lowest_acceptable_ts = blk.body.ts;
+    	    	// }
     	    }
         }
 
@@ -264,43 +301,66 @@ impl Blockchain {
 		    //
         	    // find the last shared ancestor
         	    //
-        	    let mut lchain_pos:       usize   = self.lc_pos;
-        	    let mut nchain_pos:       usize   = pos;
-        	    let mut lchain_len:       u32     = 0;
-        	    let mut nchain_len:       u32     = 0;
-        	    let mut lchain_bf:        f32     = self.index.blocks[lchain_pos].bf;
-        	    let mut nchain_bf:        f32     = self.index.blocks[nchain_pos].bf;
-        	    let mut lchain_ts:        u64     = self.index.blocks[lchain_pos].ts;
-        	    let mut nchain_ts:        u64     = self.index.blocks[nchain_pos].ts;
-        	    let mut lchain_prevbsh:   [u8;32] = self.index.blocks[lchain_pos].prevbsh;
-        	    let mut nchain_prevbsh:   [u8;32] = self.index.blocks[nchain_pos].prevbsh;
-	            let mut search_pos:       usize   = 0;
-        	    let mut search_bf:        f32     = 0.0;
-        	    let mut search_bsh:       [u8;32] = [0;32];
-        	    let mut search_prevbsh:   [u8;32] = [0;32];
-		    let mut search_completed: bool    = false;
+                    
+                    let mut longest_chain = ChainNode::new(
+                        self.lc_pos,
+                        0,
+        	        self.index.blocks[self.lc_pos].bf,
+                        self.index.blocks[self.lc_pos].ts,
+                        self.index.blocks[self.lc_pos].prevbsh,
+                        [0; 32],
+                    ); 
+                    
+                    let mut new_chain = ChainNode::new(
+                        pos,
+                        0,
+        	        self.index.blocks[pos].bf,
+                        self.index.blocks[pos].ts,
+                        self.index.blocks[pos].prevbsh,
+                        [0; 32],
+                    ); 
 
-	            if nchain_ts >= lchain_ts {
-	                search_pos = nchain_pos - 1;
+                    let mut search_node = ChainNode::default();
+                    
+        	    // let mut lchain_pos:       usize   = self.lc_pos;
+        	    // let mut nchain_pos:       usize   = pos;
+        	    // let mut lchain_len:       u32     = 0;
+        	    // let mut nchain_len:       u32     = 0;
+        	    // let mut lchain_bf:        f32     = self.index.blocks[lchain_pos].bf;
+        	    // let mut nchain_bf:        f32     = self.index.blocks[nchain_pos].bf;
+        	    // let mut lchain_ts:        u64     = self.index.blocks[lchain_pos].ts;
+        	    // let mut nchain_ts:        u64     = self.index.blocks[nchain_pos].ts;
+        	    // let mut lchain_prevbsh:   [u8;32] = self.index.blocks[lchain_pos].prevbsh;
+        	    // let mut nchain_prevbsh:   [u8;32] = self.index.blocks[nchain_pos].prevbsh;
+	            // let mut search_pos:       usize   = 0;
+        	    // let mut search_bf:        f32     = 0.0;
+        	    // let mut search_bsh:       [u8;32] = [0;32];
+        	    // let mut search_prevbsh:   [u8;32] = [0;32];
+		    
+                    let mut search_completed: bool = false;
+
+	            if new_chain.ts >= longest_chain.ts {
+	                search_node.pos = new_chain.pos - 1;
         	    } else {
-          	        search_pos = lchain_pos - 1;
+          	        search_node.pos = longest_chain.pos - 1;
          	    }
 
 		    while !search_completed {
 
-			if search_pos == 0 { 
+			if search_node.pos == 0 { 
                             search_completed = true; 
                         }
 
-          	        search_bf         = self.index.blocks[search_pos].bf;
-          	        search_bsh        = self.index.blocks[search_pos].bsh;
-          	        search_prevbsh    = self.index.blocks[search_pos].prevbsh;
+          	        search_node.bf         = self.index.blocks[search_node.pos].bf;
+          	        search_node.bsh        = self.index.blocks[search_node.pos].bsh;
+          	        search_node.prevbsh    = self.index.blocks[search_node.pos].prevbsh;
 
 			//
 			// we find the common ancestor
 			//
-		        if search_bsh == lchain_prevbsh && search_bsh == nchain_prevbsh {
-			    shared_ancestor_pos = search_pos;
+		        if search_node.bsh == longest_chain.prevbsh 
+                            && search_node.bsh == new_chain.prevbsh {
+			    shared_ancestor_pos = search_node.pos;
 			    shared_ancestor_pos_found = true;
 			    search_completed = true;
 			//
@@ -308,26 +368,26 @@ impl Blockchain {
 			//
 			} else {
 
-            		    if search_bsh == lchain_prevbsh {
-            		        lchain_len = lchain_len + 1; 
-            		        lchain_prevbsh = self.index.blocks[search_pos].prevbsh;
-            		        lchain_bf = lchain_bf + self.index.blocks[search_pos].bf;
+            		    if search_node.bsh == longest_chain.prevbsh {
+            		        longest_chain.len += 1; 
+            		        longest_chain.bf = longest_chain.bf + self.index.blocks[search_node.pos].bf;
+            		        longest_chain.prevbsh = self.index.blocks[search_node.pos].prevbsh;
             		    }
             
-            		    if search_bsh == nchain_prevbsh {
-            		        nchain_prevbsh = self.index.blocks[search_pos].prevbsh;
-            		        nchain_len = nchain_len + 1; 
-            		        nchain_bf = nchain_bf + self.index.blocks[search_pos].bf;
+            		    if search_node.bsh == new_chain.prevbsh {
+            		        new_chain.len += 1; 
+            		        new_chain.bf = new_chain.bf + self.index.blocks[search_node.pos].bf;
+            		        new_chain.prevbsh = self.index.blocks[search_node.pos].prevbsh;
             		    }
             
-            		    shared_ancestor_pos = search_pos;
-            		    if search_pos > 0 { search_pos = search_pos - 1; }            
+            		    shared_ancestor_pos = search_node.pos;
+            		    if search_node.pos > 0 { search_node.pos -= 1; }            
             
             		    //
             		    // new chain completely disconnected
             		    // 
             		    if shared_ancestor_pos == 1 {
-            		        if [0;32] == nchain_prevbsh {
+            		        if [0; 32] == new_chain.prevbsh {
 				    //
 				    // add the block, and escape from this
 				    //
@@ -338,7 +398,7 @@ impl Blockchain {
             		    } 
 
             		    if shared_ancestor_pos == 0 {
-            		        if lchain_prevbsh == nchain_prevbsh {
+            		        if longest_chain.prevbsh == new_chain.prevbsh {
 				    //
 				    // add the block, and escape from this
 				    //
@@ -355,7 +415,9 @@ impl Blockchain {
         	    // our two possible chains, and we need to decide which
         	    // we are treating as the longest chain.
         	    //
-        	    if nchain_len > lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true {
+        	    if new_chain.len > longest_chain.len 
+                        && new_chain.bf >= longest_chain.bf 
+                        && shared_ancestor_pos_found == true {
 
 		        //
    		        // to prevent our system from being gamed, we
@@ -381,7 +443,9 @@ impl Blockchain {
    		        // this is like the option above, except that we
    		        // have a choice of which block to support.
    		        //
-   		        if nchain_len == lchain_len && nchain_bf >= lchain_bf && shared_ancestor_pos_found == true {
+   		        if new_chain.len == longest_chain.len 
+                            && new_chain.bf >= longest_chain.bf
+                            && shared_ancestor_pos_found == true {
 
 			    //
 			    // TODO - allow voter preference 
@@ -447,20 +511,18 @@ impl Blockchain {
 	// update blockchain state variables depending
 	//
 	if i_am_the_longest_chain == 1 {
-
 	    self.last_bsh  = self.index.blocks[pos].bsh;
 	    self.last_ts   = self.index.blocks[pos].ts;
 	    self.last_bid  = self.index.blocks[pos].bid;
   	    self.lc_pos = pos;
 	    self.lc_pos_set = true;
-
         }
 
 	//
 	// old and new chains
 	//
-	let mut shared_ancestor_bsh:  [u8;32];
-	let mut new_hash_to_hunt_for: [u8;32];
+	let mut shared_ancestor_bsh:  Option<[u8;32]>;
+	let mut new_hash_to_hunt_for: Option<[u8;32]>;
 	let mut old_hash_to_hunt_for: Option<[u8;32]>;
 	let mut new_block_hashes:     Vec<[u8;32]>;
 	let mut old_block_hashes:     Vec<[u8;32]>;
@@ -498,7 +560,7 @@ impl Blockchain {
                 old_hash = Some(self.index.blocks[last_lc_pos].bsh);
             }
 
-	    new_hash_to_hunt_for = blk.return_bsh();
+	    new_hash_to_hunt_for = Some(blk.return_bsh());
 	    old_hash_to_hunt_for = old_hash;
 	    new_block_hashes     = vec![];
 	    old_block_hashes     = vec![];
@@ -523,8 +585,8 @@ impl Blockchain {
                         old_block_hashes.push(self.index.blocks[i].bsh);
         	    }
 
-        	    if self.index.blocks[i].bsh == new_hash_to_hunt_for {
-          		new_hash_to_hunt_for = self.index.blocks[i].prevbsh;
+        	    if self.index.blocks[i].bsh == new_hash_to_hunt_for.unwrap() {
+          		new_hash_to_hunt_for = Some(self.index.blocks[i].prevbsh);
           		new_block_hashes.push(self.index.blocks[i].bsh);
         	    }
       		}
@@ -543,7 +605,7 @@ impl Blockchain {
             // these shouldn't be blank, but Options
 	    //
             println!("we are not the longest chain (?)");
-	    new_hash_to_hunt_for = [0;32];
+	    new_hash_to_hunt_for = Some([0;32]);
 	    old_hash_to_hunt_for = Some([0;32]);
 	    new_block_hashes     = vec![];
 	    old_block_hashes     = vec![];
@@ -890,7 +952,6 @@ impl Blockchain {
                 //
                 // spend in shashmap
                 //
-                println!("SPENDING TX: {:?}", old_blk.return_bsh());
                 for tx in old_blk.body.txs.iter() {
                     shashmap.spend_transaction(&tx, old_blk.body.id);
                 }
@@ -900,10 +961,6 @@ impl Blockchain {
                         self.add_block_success(blk, pos, i_am_the_longest_chain, force);
                         return;
                     } else {
-                        println!("GOING INTO ADD BLOCK FAILURE") ;
-                        println!("CURRENT_WIND_INDEX: {}", current_wind_index);
-                        println!("NEW BLOCK HASHES: {:?}", new_block_hashes);
-
                         self.add_block_failure(blk, pos, i_am_the_longest_chain, force);
                         return;
                     }
@@ -941,15 +998,12 @@ impl Blockchain {
                         );
 
                 } else {
-                    panic!("NEEDING TO UNWIND NEW CHAIN");
                     //
                     // we need to unwind some of our previously
                     // added blocks from the new chain. so we
                     // swap our hashes to wind/unwind.
                     //
                     let mut chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
-                    let chain_to_unwind_idxs   :Vec<usize>   = vec![];
-                    let chain_to_unwind_ids    :Vec<u32>   = vec![];
 
                     for h in (current_wind_index)..new_block_hashes.len() {
                         chain_to_unwind_hashes.push(new_block_hashes[h]);
@@ -970,7 +1024,7 @@ impl Blockchain {
                         force,
                         1,
                         chain_to_unwind_hashes.clone().len(),
-                        );
+                    );
                 }
             }
         }
@@ -982,23 +1036,48 @@ impl Blockchain {
 	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
 	println!("\n\n\n");
+
+        // 
+        // reset spent inputs
+        //
+        // add slips to wallet
+        //
+        // remove blocks and transactions from mempool
+        //
+        // pass block data to runtime and run callbacks
+        //
+        // save blockchain options
+        //
+        // update transient chain
+        //
+        // mine on new block
+        //
+        // propagate to network
+        //
+
     }
 
     pub fn add_block_failure(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 	println!("FAILURE ADDING BLOCK");
 	println!("\n\n\n");
+        
+        //
+        // restore longest chain
+        //
+        // reset miner
+        //
+        // save state
+        //
+        // remove bad block and transactions from chain
+        //
     }
 
     pub fn validate_block(&self, blk: &Block) -> bool {
         return true;
     }
 
-    pub fn is_bsh_indexed(&mut self, bsh:[u8; 32] ) -> bool {
-	if self.bsh_lc_hmap.contains_key(&bsh) {
-	    return true;
-	} else {
-	    return false;
-	}
+    pub fn is_bsh_indexed(&mut self, bsh: [u8; 32] ) -> bool {
+	return self.bsh_lc_hmap.contains_key(&bsh)
     }
 
     pub fn return_latest_block_header(&mut self) -> BlockHeader {

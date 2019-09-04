@@ -6,7 +6,7 @@ pub struct Slip {
     body: SlipBody,
     lc: u8,
     is_valid: u8,
-    spent_status: SlipSpentStatus,
+    pub spent_status: SlipSpentStatus,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
@@ -55,12 +55,20 @@ impl Slip {
         }
     }
 
+    pub fn return_amt(&self) -> u64 {
+        return self.body.amt;
+    }
+    
     pub fn set_amt(&mut self, amt: u64) {
         self.body.amt = amt;
     }
 
-    pub fn return_amt(&self) -> u64 {
-        return self.body.amt;
+    pub fn set_broadcast_type(&mut self, broadcast_type: SlipBroadcastType) {
+        self.body.typ = broadcast_type;
+    }
+
+    pub fn return_add(&self) -> PublicKey {
+        return self.body.add;
     }
 
     // implication is slip type is immutable

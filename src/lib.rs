@@ -1,5 +1,6 @@
 pub mod blockchain;
 pub mod storage;
+pub mod lottery;
 pub mod config;
 pub mod mempool;
 pub mod wallet;

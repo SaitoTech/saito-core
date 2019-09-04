@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct BurnFee {
     pub start: f32,
-    pub current: f32,
+    pub current: u64,
 }
 
 impl BurnFee {
@@ -11,13 +11,12 @@ impl BurnFee {
     ///
     /// * `start` - y-value at x = 0
     /// * `current` - y-value at x = 0 for next bloc
-    pub fn new(start: f32, current: f32) -> BurnFee {
+    pub fn new(start: f32, current: u64) -> BurnFee {
         return BurnFee {
 	    start, 
 	    current 
 	};
     }
-
 
     /// returns the amount of work needed to produce a block given the timestamp of
     /// the previous block, the current timestamp, and the y-axis of the burn fee
@@ -28,7 +27,7 @@ impl BurnFee {
     /// * `ts`     - candidate timestamp
     /// * `start`  - burn fee value (y-axis) for curve determination ("start")
     ///
-    pub fn return_work_needed(&mut self, prevts: u64, ts: u64, start: f32, heartbeat: u64) -> u64 {
+    pub fn return_work_needed(prevts: u64, ts: u64, start: f32, heartbeat: u64) -> u64 {
 
 	let mut elapsed_time = ts - prevts;
         if elapsed_time == 0 { elapsed_time = 1; }

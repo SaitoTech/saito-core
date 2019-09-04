@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use crate::hop::{Hop};
 use crate::slip::{Slip};
 use crate::helper::{create_timestamp};
-use crate::crypto::{Signature};
+use crate::crypto::{Signature, PublicKey};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum TransactionBroadcastType {
@@ -22,7 +22,7 @@ pub struct TransactionBody {
     pub   from: Vec<Slip>,
     sig:  Signature,
     ver:  f32,
-    typ:  TransactionBroadcastType,
+    pub typ:  TransactionBroadcastType,
     path: Vec<Hop>,
     msg:  Vec<u8>,
     ps:   u8,
@@ -78,11 +78,39 @@ impl Transaction {
         return self.body.from.clone();
     }
 
+    pub fn return_fees_usable(&self, publickey: &PublicKey) -> u64 {
+        let input_fees: u64 = self.body.from
+            .iter()
+            .filter(|slip| &slip.return_add() == publickey)
+            .map(|slip| slip.return_amt())
+            .sum();
+
+        let output_fees: u64 = self.body.to
+            .iter()
+            .filter(|slip| &slip.return_add() == publickey)
+            .map(|slip| slip.return_amt())
+            .sum();
+
+        return input_fees - output_fees;
+    }
+
+    pub fn set_tx_type(&mut self, tx_type: TransactionBroadcastType) {
+        self.body.typ = tx_type;
+    }
+
     //
     // TODO - calculate based on path information not 1
     //
     pub fn return_work_available(&self, _publickey: &str) -> u64 {
         return 1;
+    }
+
+    pub fn return_signature_source(&self) -> Vec<u8> {
+        return bincode::serialize(&self.body).unwrap();
+    }
+
+    pub fn set_sig(&mut self, sig: Signature) {
+        self.body.sig = sig 
     }
 }
 

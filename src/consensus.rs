@@ -1,6 +1,7 @@
 use std::{thread, time};
 use crate::blockchain::Blockchain;
 use crate::mempool::Mempool;
+use crate::lottery::{Lottery, Miner};
 use crate::wallet::Wallet;
 use crate::shashmap::Shashmap;
 use crate::network::NetworkMessage;
@@ -20,9 +21,11 @@ pub struct Consensus {
 
 impl Consensus {
     pub fn new() -> Consensus {
+        let miner = Miner::new();
         return Consensus {
             blockchain: Blockchain::new(),
             mempool:    Mempool::new(),
+            lottery:    Lottery::new(miner), 
             wallet:     Wallet::new(),
             shashmap:   Shashmap::new(),
         }
@@ -43,7 +46,7 @@ impl Consensus {
 
             let one_second = time::Duration::from_millis(1000);
             thread::sleep(one_second);
-        } 
+        }
 
     }
 }

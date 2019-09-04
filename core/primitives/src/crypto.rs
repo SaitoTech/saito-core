@@ -19,9 +19,20 @@ pub fn generate_keys() -> (SecretKey, PublicKey) {
     return secp.generate_keypair(&mut thread_rng());
 }
 
+pub fn generate_random_data() -> Vec<u8> {
+    return (0..32).map(|_| { rand::random::<u8>() }).collect()
+
+}
+
 pub fn hash(data: Vec<u8>, output: &mut [u8]) {
     let mut hasher = Sha256::new();
     hasher.input(data);
     return output.copy_from_slice(hasher.result().as_slice());
+}
+
+pub fn sign(data: &[u8; 32], privatekey: &SecretKey) -> Signature {
+    let sign = Secp256k1::signing_only();
+    let msg = Message::from_slice(data).unwrap();
+    return sign.sign(&msg, privatekey)
 }
 

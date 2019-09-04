@@ -18,7 +18,7 @@ impl Mempool {
         return Mempool {
             blocks: vec![],
             transactions: vec![],
-            burnfee: BurnFee::new(0.0, 0.0),
+            burnfee: BurnFee::new(0.0, 0),
             work_available: 0,
         };
     }
@@ -44,7 +44,7 @@ impl Mempool {
     // use blockchain data in RETURN_WORK_NEEDED call
     pub fn can_bundle_block (&mut self, block_header: BlockHeader) -> bool {
 	let ts = create_timestamp();
-        let work_needed = self.burnfee.return_work_needed(block_header.ts, ts, block_header.bf, 100_000_000);
+        let work_needed = BurnFee::return_work_needed(block_header.ts, ts, block_header.bf, 100_000_000);
         if work_needed <= self.work_available {
 	    return true;
         }
@@ -53,7 +53,9 @@ impl Mempool {
 
     pub fn bundle_block (&mut self, wallet: &Wallet, block_header: BlockHeader) -> Option<Block> {
         let mut block = Block::new(wallet.return_publickey(), block_header.bsh);
+        let current_work: u64 = BurnFee::return_work_needed(block_header.ts, create_timestamp(), block_header.bf, 100_000_000);
         block.set_transactions(&mut self.transactions);
+        block.set_burnfee(BurnFee::new(0.0, current_work));
 	self.clear_transactions();
 	return Some(block);
     }

@@ -67,7 +67,7 @@ impl BlockBody {
     	    merkle:      [0; 32],
     	    creator:     block_creator,
     	    txs:         vec![],
-	    bf:          BurnFee::new(0.0, 0.0),
+	    bf:          BurnFee::new(0.0, 0),
     	    difficulty:  0.0,
     	    paysplit:    0.0,
     	    vote:        0,
@@ -119,6 +119,10 @@ impl Block {
         std::mem::swap(&mut self.body.txs, transactions);
     }
 
+    pub fn set_burnfee(&mut self, bf: BurnFee) {
+        self.body.bf = bf;
+    }
+
     pub fn return_body(&self) -> &BlockBody {
         return &self.body;
     }
@@ -145,6 +149,32 @@ impl Block {
         return HEXLOWER.encode(&self.return_bsh());
     }
 
+    pub fn return_creator(&self) -> PublicKey {
+        return self.body.creator;
+    }
+
+    pub fn return_paid_burnfee(&self) -> u64 {
+        return self.body.bf.current;
+    }
+
+    pub fn return_difficulty(&self) -> f32 {
+        return self.body.difficulty;
+    }
+
+    pub fn return_paysplit(&self) -> f32 {
+        return self.body.paysplit;
+    }
+
+    pub fn return_coinbase(&self) -> u64 {
+        return self.body.coinbase;
+    }
+
+    pub fn return_available_fees(&self, publickey: &PublicKey) -> u64 {
+        return self.body.txs
+            .iter()
+            .map(|tx| tx.return_fees_usable(publickey))
+            .sum();
+    }
 }
 
 

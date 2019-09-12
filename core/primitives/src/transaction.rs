@@ -70,6 +70,10 @@ impl Transaction {
         self.body.from.push(slip)
     }
 
+    pub fn set_msg(&mut self, msg: Vec<u8>) {
+        self.body.msg = msg;
+    }
+
     pub fn return_to_slips(&self) -> Vec<Slip> {
         return self.body.to.clone();
     }
@@ -79,6 +83,9 @@ impl Transaction {
     }
 
     pub fn return_fees_usable(&self, publickey: &PublicKey) -> u64 {
+        //  
+        // we want to cache this value and reuse it in the future; 
+        //
         let input_fees: u64 = self.body.from
             .iter()
             .filter(|slip| &slip.return_add() == publickey)
@@ -90,6 +97,14 @@ impl Transaction {
             .filter(|slip| &slip.return_add() == publickey)
             .map(|slip| slip.return_amt())
             .sum();
+
+        // need stronger checks here for validation
+        // this should not be possible to do unless your 
+        // receiving the block reward 
+
+        if input_fees < output_fees {
+            return 0;
+        } 
 
         return input_fees - output_fees;
     }

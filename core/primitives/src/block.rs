@@ -50,11 +50,59 @@ pub struct BlockHeader {
     pub prevbsh: [u8;32],
     pub bid: u32,
     pub ts:  u64,
+    pub difficulty: f32,
+    pub paysplit: f32,
+    pub vote: i8,
+    pub treasury: u64,
+    pub coinbase: u64,
+    pub reclaimed: u64,
 }
 
 impl BlockHeader {
-    pub fn new(bf: f32, bsh: [u8;32], prevbsh: [u8;32], bid: u32, ts: u64) -> BlockHeader {
-        return BlockHeader { bf, bsh, prevbsh, bid, ts };
+    pub fn new (
+        bf: f32,
+        bsh: [u8;32],
+        prevbsh: [u8;32],
+        bid: u32,
+        ts: u64,
+        difficulty: f32,
+        paysplit: f32,
+        vote: i8,
+        treasury: u64,
+        coinbase: u64,
+        reclaimed: u64
+    ) -> BlockHeader {
+        return BlockHeader {
+            bf,
+            bsh, 
+            prevbsh,
+            bid,
+            ts,
+            difficulty,
+            paysplit,
+            vote,
+            treasury,
+            coinbase,
+            reclaimed
+        };
+    }
+}
+
+impl Default for BlockHeader {
+    fn default() -> Self {
+        return BlockHeader{
+            bf: 0.0,
+            bsh: [0;32],
+            prevbsh: [0;32],
+            bid: 0,
+            ts: 0,
+            difficulty: 0.0,
+            paysplit: 0.5,
+            vote: 0,
+            treasury: 286_810_000_000_000_000,
+            coinbase: 0,
+            reclaimed: 0 
+        }
     }
 }
 
@@ -69,9 +117,9 @@ impl BlockBody {
     	    txs:         vec![],
 	    bf:          BurnFee::new(0.0, 0),
     	    difficulty:  0.0,
-    	    paysplit:    0.0,
+    	    paysplit:    0.5,
     	    vote:        0,
-    	    treasury:    0,
+    	    treasury:    286_810_000_000_000_000,
     	    coinbase:    0,
     	    reclaimed:   0
         };
@@ -82,21 +130,21 @@ impl BlockBody {
 impl Block {
     pub fn new(creator: PublicKey, prevbsh: [u8;32]) -> Block {
         return Block {
-	    body:      BlockBody::new(creator, prevbsh),
-	    is_valid:  1,
-	    mintid:    0,
-	    maxtid:    0,
-	    bsh:       [0; 32],
+            body:      BlockBody::new(creator, prevbsh),
+            is_valid:  1,
+            mintid:    0,
+            maxtid:    0,
+            bsh:       [0; 32],
         };
     }
 
     pub fn create_from_block_body(body: BlockBody) -> Block {
         return Block {
-	    body:      body,
-	    is_valid:  1,
-	    mintid:    0,
-	    maxtid:    0,
-	    bsh:       [0; 32],
+            body:      body,
+            is_valid:  1,
+            mintid:    0,
+            maxtid:    0,
+            bsh:       [0; 32],
         };
     }
 
@@ -107,9 +155,15 @@ impl Block {
             self.body.prevbsh,
             self.body.id,
             self.body.ts,
-        );
+            self.body.difficulty,
+            self.body.paysplit,
+            self.body.vote,
+            self.body.treasury,
+            self.body.coinbase,
+            self.body.reclaimed,
+            );
     }
-        
+
 
     pub fn add_transaction(&mut self, tx: Transaction) {
         self.body.txs.push(tx);
@@ -174,6 +228,34 @@ impl Block {
             .iter()
             .map(|tx| tx.return_fees_usable(publickey))
             .sum();
+    }
+
+    pub fn set_id(&mut self, id: u32) {
+        self.body.id = id;
+    }
+
+    pub fn set_treasury(&mut self, treasury: u64) {
+        self.body.treasury = treasury;
+    }
+
+    pub fn set_prevhash(&mut self, prevbsh: [u8; 32]) {
+        self.body.prevbsh = prevbsh;
+    }
+    
+    pub fn set_difficulty(&mut self, difficulty: f32) {
+        self.body.difficulty = difficulty; 
+    }
+    
+    pub fn set_paysplit(&mut self, paysplit: f32) {
+        self.body.paysplit = paysplit; 
+    }
+
+    pub fn set_coinbase(&mut self, coinbase: u64) {
+        self.body.coinbase = coinbase;
+    }
+    
+    pub fn set_reclaimed(&mut self, reclaimed: u64) {
+        self.body.reclaimed = reclaimed;
     }
 }
 

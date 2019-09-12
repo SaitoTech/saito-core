@@ -65,7 +65,7 @@ impl Actor for Network {
     type Context = Context<Network>;
 } 
 
-#[derive(Message)]
+#[derive(Message, Debug)]
 pub enum NetworkMessage {
     IncomingBlock(Block),
     IncomingTransaction(Transaction),

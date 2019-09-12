@@ -6,6 +6,8 @@ pub mod mempool;
 pub mod wallet;
 pub mod shashmap;
 
+pub mod types;
+
 pub mod network;
 pub mod consensus;
 pub mod runtime;

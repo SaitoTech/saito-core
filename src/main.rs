@@ -1,8 +1,12 @@
 use saito_core::network::Network;
 use saito_core::consensus::Consensus;
 use saito_core::runtime::Runtime;
+use saito_core::wallet::Wallet;
+use saito_core::lottery::{Lottery, Miner};
 
 use std::thread;
+use std::cell::RefCell;
+use std::sync::Arc;
 
 use actix::*;
 
@@ -22,22 +26,20 @@ fn main() {
     //    
     // Instantiate
     //
-    let mut consensus = Consensus::new();
-    let consensus_addr = consensus.clone().start().recipient();
-    let network = Network { consensus_addr };
-    let runtime = Runtime::new();
-    let publickey = consensus.wallet.return_publickey();
 
+    let addr = Lottery::create(|ctx| {
+        let lottery_addr = ctx.address().recipient();
 
-    //
-    // Initialize
-    //
-    thread::spawn(move || {
-        consensus.init();
-    });
+        // need to add config in here
+        let wallet = Arc::new(Wallet::new());
 
-    thread::spawn(move || {
-        network.init(publickey);
+        let mut consensus = Consensus::new(wallet.clone(), lottery_addr);
+        let consensus_addr = consensus.start().recipient();
+        
+        let runtime = Runtime::new();
+        let network = Network { consensus_addr: consensus_addr.clone() };
+
+        return Lottery::new(Miner::new(), wallet.clone(), consensus_addr.clone());
     });
 
 

@@ -1014,7 +1014,7 @@ impl Blockchain {
     pub fn add_block_success(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
 	println!("SUCCESS ADDING BLOCK");
         Storage::write_block_to_disk(blk);
-	println!("Adding block: {:?}", self.return_latest_block_header().bsh); 
+	println!("Adding block: {:?}", self.return_latest_block_header().unwrap().bsh); 
 	println!("lc: {:?}", i_am_the_longest_chain);
 	println!("\n\n\n");
 
@@ -1022,6 +1022,7 @@ impl Blockchain {
         // reset spent inputs
         //
         // add slips to wallet
+
         //
         // remove blocks and transactions from mempool
         //
@@ -1061,11 +1062,13 @@ impl Blockchain {
 	return self.bsh_lc_hmap.contains_key(&bsh)
     }
 
-    pub fn return_latest_block_header(&mut self) -> BlockHeader {
+    pub fn return_latest_block_header(&mut self) -> Option<BlockHeader> {
         if !self.lc_pos_set { 
-	    return BlockHeader::new(0.0, [0;32], [0;32], 0, 0);
+	    //return BlockHeader::new(0.0, [0;32], [0;32], 0, 0);
+            //return BlockHeader::default();
+            return None
 	}
-	return self.index.blocks[self.lc_pos].clone();
+	return Some(self.index.blocks[self.lc_pos].clone());
     }
 
     pub fn return_index_length(&self) -> usize {
@@ -1074,6 +1077,13 @@ impl Blockchain {
 
     pub fn return_heartbeat(&self) -> u64 {
         return 100_000;
+    }
+
+    //
+    // TODO: implement this when we start rebroadcasting logic
+    // 
+    pub fn calculate_reclaimed_funds(&self, _blk_header: BlockHeader) -> u64 {
+        return 0;
     }
 
 }

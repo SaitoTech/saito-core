@@ -4,8 +4,11 @@ use std::path::{Path, PathBuf};
 
 use serde::{Serialize, Deserialize};
 
-use saito_primitives::crypto::{ReadablePublicKey, ReadablePrivateKey};
 use saito_primitives::slip:: Slip;
+use saito_primitives::crypto::{ReadablePublicKey, ReadablePrivateKey};
+
+pub const TREASURY: u64 = 286_810_000_000_000_00;
+pub const GENESIS_PERIOD: u64 = 21500;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {

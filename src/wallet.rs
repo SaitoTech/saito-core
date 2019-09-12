@@ -80,6 +80,10 @@ impl Wallet {
         }
     }
 
+    pub fn add_slip(&mut self, slip: Slip) {
+        self.body.slips.push(slip);
+    }
+
     pub fn return_balance(&self) -> u64 {
         return self.body.slips
             .iter()

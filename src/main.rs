@@ -6,7 +6,7 @@ use saito_core::lottery::{Lottery, Miner};
 
 use std::thread;
 use std::cell::RefCell;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use actix::*;
 
@@ -31,7 +31,7 @@ fn main() {
         let lottery_addr = ctx.address().recipient();
 
         // need to add config in here
-        let wallet = Arc::new(Wallet::new());
+        let wallet = Arc::new(RwLock::new(Wallet::new()));
 
         let mut consensus = Consensus::new(wallet.clone(), lottery_addr);
         let consensus_addr = consensus.start().recipient();

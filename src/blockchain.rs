@@ -1,10 +1,14 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+use std::sync::RwLock;
+
 use saito_primitives::block::{Block, BlockHeader};
 use saito_primitives::burnfee::BurnFee;
-use crate::storage::Storage;
-use crate::shashmap::Shashmap;
 use saito_primitives::helper::{create_timestamp};
+
+use crate::storage::Storage;
+use crate::wallet::Wallet;
+use crate::shashmap::Shashmap;
 
 
 //
@@ -123,7 +127,7 @@ impl Blockchain {
     }
 
 
-    pub fn add_block(&mut self, blk: Block, shashmap: &mut Shashmap) {
+    pub fn add_block(&mut self, blk: Block, wallet: &RwLock<Wallet>, shashmap: &mut Shashmap) {
 
 	///////////////////
 	// SANITY CHECKS //
@@ -528,7 +532,7 @@ impl Blockchain {
 	        shashmap.spend_transaction(tx, blk.body.id);
 	        shashmap.insert_new_transaction(tx);
 	    }
-            self.add_block_success(blk, pos, 1, 1);
+            self.add_block_success(blk, wallet, pos, 1, 1);
             return;
         } 
         
@@ -595,6 +599,7 @@ impl Blockchain {
 
 	self.validate(
 	    blk,
+            wallet,
             shashmap,
 	    pos,
 	    i_am_the_longest_chain,
@@ -611,6 +616,7 @@ impl Blockchain {
     pub fn validate(
 	&mut self, 
 	mut blk                :Block,
+        wallet                 :&RwLock<Wallet>,
         shashmap               :&mut Shashmap,
 	pos		       :usize,
 	i_am_the_longest_chain :u8,
@@ -645,6 +651,7 @@ impl Blockchain {
 	    let obhlen = old_block_hashes.len()-1;
 	    self.unwind_chain(
 	        blk,
+                wallet,
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
@@ -657,6 +664,7 @@ impl Blockchain {
 	} else {
 	    self.wind_chain(
 	        blk,
+                wallet,
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
@@ -672,6 +680,7 @@ impl Blockchain {
     pub fn unwind_chain(
 	 &mut self,
 	 mut blk	      :Block,
+         wallet               :&RwLock<Wallet>,
          shashmap             :&mut Shashmap,
 	 pos		      :usize,
  	 mut i_am_the_longest_chain:u8,
@@ -746,6 +755,7 @@ impl Blockchain {
 	    if current_unwind_index == 0 {
 	        self.wind_chain(
 	            blk,
+                    wallet,
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
@@ -758,6 +768,7 @@ impl Blockchain {
 	    } else {
 		self.unwind_chain(
 	            blk,
+                    wallet,
                     shashmap,
 	            pos,
 	            i_am_the_longest_chain,
@@ -776,6 +787,7 @@ impl Blockchain {
 	    //
 	    self.wind_chain(
 	        blk,
+                wallet, 
                 shashmap,
 	        pos,
 	        i_am_the_longest_chain,
@@ -790,22 +802,23 @@ impl Blockchain {
 
     pub fn wind_chain(
 	&mut self,
-	mut blk		     :Block,
+	blk		     :Block,
+        wallet               :&RwLock<Wallet>,
         shashmap             :&mut Shashmap,
         pos		     :usize,
         i_am_the_longest_chain:u8,
         new_block_hashes     :Vec<[u8;32]>,
         old_block_hashes     :Vec<[u8;32]>,
-	mut force            :u8,
-       	mut resetting_flag   :u8,
-        mut current_wind_index :usize,
+	force            :u8,
+       	resetting_flag   :u8,
+        current_wind_index :usize,
     ) {
 
         let mut this_block_hash = [0; 32];
 
         // temporary catch when new_block_hashes and old_block_hashes are replaced as Options
         if new_block_hashes.len() == 0 && old_block_hashes.len() == 0 {
-            self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+            self.add_block_success(blk, wallet, pos, i_am_the_longest_chain, force);
             return;
         }
 
@@ -835,7 +848,7 @@ impl Blockchain {
 	            shashmap.spend_transaction(&tx, blk.body.id);
 	        }
 
-      	        self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+      	        self.add_block_success(blk, wallet, pos, i_am_the_longest_chain, force);
                 return;
 
             } else {
@@ -855,6 +868,7 @@ impl Blockchain {
 	    	    if old_block_hashes.len() > 0 {
                         self.wind_chain(
                     	    blk,
+                            wallet,
                     	    shashmap,
                     	    pos,
                     	    i_am_the_longest_chain,
@@ -895,6 +909,7 @@ impl Blockchain {
                     let ctulen = chain_to_unwind_hashes.len();
                     self.unwind_chain(
                         blk,
+                        wallet,
                         shashmap,
                         pos,
                         i_am_the_longest_chain,
@@ -939,7 +954,7 @@ impl Blockchain {
 
                 if current_wind_index == new_block_hashes.len() - 1 {
                     if resetting_flag == 0 {
-                        self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+                        self.add_block_success(blk, wallet, pos, i_am_the_longest_chain, force);
                         return;
                     } else {
                         self.add_block_failure(blk, pos, i_am_the_longest_chain, force);
@@ -949,6 +964,7 @@ impl Blockchain {
 
                     self.wind_chain(
                         blk,
+                        wallet,
                         shashmap,
                         pos,
                         i_am_the_longest_chain,
@@ -961,13 +977,14 @@ impl Blockchain {
                         return;
                 }
 
-                self.add_block_success(blk, pos, i_am_the_longest_chain, force);
+                self.add_block_success(blk, wallet, pos, i_am_the_longest_chain, force);
                 return;
             } else {
 
                 if current_wind_index == 0 {
                     self.wind_chain(
                         blk,
+                        wallet,
                         shashmap,
                         pos,
                         i_am_the_longest_chain,
@@ -997,6 +1014,7 @@ impl Blockchain {
                     //
                     self.unwind_chain(
                         blk,
+                        wallet,
                         shashmap,
                         pos,
                         i_am_the_longest_chain,
@@ -1011,28 +1029,60 @@ impl Blockchain {
         }
     }
 
-    pub fn add_block_success(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
-	println!("SUCCESS ADDING BLOCK");
-        Storage::write_block_to_disk(blk);
-	println!("Adding block: {:?}", self.return_latest_block_header().unwrap().bsh); 
-	println!("lc: {:?}", i_am_the_longest_chain);
-	println!("\n\n\n");
-
+    pub fn add_block_success(&mut self, blk: Block, wallet: &RwLock<Wallet>, pos: usize, i_am_the_longest_chain: u8, force: u8) {
+        println!("SUCCESS ADDING BLOCK");
+        
         // 
         // reset spent inputs
         //
-        // add slips to wallet
 
         //
-        // remove blocks and transactions from mempool
+        // add slips to wallet
+        //
+        
+        let publickey = wallet.read().unwrap().return_publickey();
+        blk.body.txs
+            .iter() 
+            .for_each(|tx| {
+                tx.return_from_slips()
+                    .iter()
+                    .filter(|slip| slip.return_add() == publickey)
+                    .for_each(move |slip| {
+                        if let Ok(mut wallet_guard) = wallet.write() {
+                            wallet_guard.remove_slip(slip.clone());
+                        }
+                    });
+                tx.return_to_slips()
+                    .iter()
+                    .filter(|slip| slip.return_add() == publickey)
+                    .for_each(move |slip| {
+                        if let Ok(mut wallet_guard) = wallet.write() {
+                            wallet_guard.add_slip(slip.clone());
+                        }
+                    });
+            });
+
+        Storage::write_block_to_disk(blk);
+        println!("Adding block: {:?}", self.return_latest_block_header().unwrap().bsh); 
+        println!("lc: {:?}", i_am_the_longest_chain);
+        println!("\n\n\n");
+
         //
         // pass block data to runtime and run callbacks
         //
+        
+        //
         // save blockchain options
         //
+        
+        // 
         // update transient chain
         //
+        
+        //
         // mine on new block
+        //
+        
         //
         // propagate to network
         //
@@ -1225,4 +1275,3 @@ mod test {
         
     }
 }
-

@@ -1,6 +1,6 @@
 use std::{thread, time};
 use std::cell::RefCell;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::blockchain::Blockchain;
 use crate::mempool::Mempool;
@@ -18,7 +18,7 @@ use actix::*;
 pub struct Consensus {
     blockchain: Blockchain,
     mempool:    Mempool,
-    pub wallet: Arc<Wallet>,
+    pub wallet: Arc<RwLock<Wallet>>,
     shashmap:   Shashmap,
     pub lottery_addr: Recipient<BlockMessage>,
 }
@@ -44,7 +44,7 @@ impl Handler<NetworkMessage> for Consensus {
     fn handle(&mut self, msg: NetworkMessage, _: &mut Context<Self>) {
         match msg {
             NetworkMessage::IncomingBlock(blk) => {
-                self.blockchain.add_block(blk, &mut self.shashmap);
+                self.blockchain.add_block(blk, &self.wallet, &mut self.shashmap);
             },
             NetworkMessage::IncomingTransaction(tx) => {
                 self.mempool.add_transaction(tx);
@@ -55,7 +55,7 @@ impl Handler<NetworkMessage> for Consensus {
 }
 
 impl Consensus {
-    pub fn new(wallet: Arc<Wallet>, lottery_addr: Recipient<BlockMessage>) -> Consensus {
+    pub fn new(wallet: Arc<RwLock<Wallet>>, lottery_addr: Recipient<BlockMessage>) -> Consensus {
         return Consensus {
             blockchain: Blockchain::new(),
             mempool:    Mempool::new(),
@@ -86,7 +86,7 @@ impl Consensus {
             
             println!("BLOCK : {:?}", blk);
             // need to add some control flow if a block isn't produced successfully
-            self.blockchain.add_block(blk, &mut self.shashmap);
+            self.blockchain.add_block(blk, &mut self.wallet, &mut self.shashmap);
 
             // add slips to wallet after successfully producing block
             //blk.body.txs

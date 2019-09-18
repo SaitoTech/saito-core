@@ -50,6 +50,8 @@ pub struct BlockHeader {
     pub prevbsh: [u8;32],
     pub bid: u32,
     pub ts:  u64,
+    pub mintid: u32,
+    pub maxtid: u32,
     pub difficulty: f32,
     pub paysplit: f32,
     pub vote: i8,
@@ -65,6 +67,8 @@ impl BlockHeader {
         prevbsh: [u8;32],
         bid: u32,
         ts: u64,
+        mintid: u32,
+        maxtid: u32,
         difficulty: f32,
         paysplit: f32,
         vote: i8,
@@ -78,6 +82,8 @@ impl BlockHeader {
             prevbsh,
             bid,
             ts,
+            mintid,
+            maxtid,
             difficulty,
             paysplit,
             vote,
@@ -96,6 +102,8 @@ impl Default for BlockHeader {
             prevbsh: [0;32],
             bid: 0,
             ts: 0,
+            mintid: 0,
+            maxtid: 0,
             difficulty: 0.0,
             paysplit: 0.5,
             vote: 0,
@@ -155,13 +163,15 @@ impl Block {
             self.body.prevbsh,
             self.body.id,
             self.body.ts,
+            self.mintid,
+            self.maxtid,
             self.body.difficulty,
             self.body.paysplit,
             self.body.vote,
             self.body.treasury,
             self.body.coinbase,
             self.body.reclaimed,
-            );
+        );
     }
 
 
@@ -171,6 +181,51 @@ impl Block {
 
     pub fn set_transactions(&mut self, transactions: &mut Vec<Transaction>) {
         std::mem::swap(&mut self.body.txs, transactions);
+
+        let tx_length = self.body.txs.len();
+        let maxtid = self.maxtid;
+        let bid = self.body.id;
+
+        for (i, tx) in self.body.txs.iter_mut().enumerate() {
+            let current_tid = maxtid + i as u32 + 1;
+            let mut current_sid = 0;
+            
+            println!("CURRENT TID: {}", current_tid);
+
+//            vec!(tx.return_to_slips(), tx.return_from_slips())
+//                .iter_mut()
+//                .flatten()
+//                .enumerate()
+//                .for_each(|(j, slip)| slip.set_ids(bid, current_tid, j as u32 + 1));
+
+            let to_slips = tx.return_to_slips()
+                .iter_mut()
+                .map(move |slip| {
+                    slip.set_ids(0, 0, current_sid);
+                    current_sid += 1;
+                    return slip.clone();
+                })
+                //.collect::<Vec<_>>();
+                .collect();
+            
+            tx.set_to_slips(to_slips);
+            
+            let from_slips = tx.return_from_slips()
+                .iter_mut()
+                .map(move |slip| {
+                    slip.set_ids(bid, current_tid, current_sid);
+                    current_sid += 1;
+                    return slip.clone();
+                })
+                .collect::<Vec<_>>();
+            
+            tx.set_from_slips(from_slips);
+
+            tx.set_id(current_tid);
+        }
+        
+        self.mintid = self.maxtid + 1;
+        self.maxtid = self.maxtid + tx_length  as u32;
     }
 
     pub fn set_burnfee(&mut self, bf: BurnFee) {
@@ -207,6 +262,14 @@ impl Block {
         return self.body.creator;
     }
 
+    pub fn return_mintid(&self) -> u32 {
+        return self.mintid;
+    }
+    
+    pub fn return_maxtid(&self) -> u32 {
+        return self.maxtid;
+    }
+
     pub fn return_paid_burnfee(&self) -> u64 {
         return self.body.bf.current;
     }
@@ -232,6 +295,14 @@ impl Block {
 
     pub fn set_id(&mut self, id: u32) {
         self.body.id = id;
+    }
+
+    pub fn set_mintid(&mut self, mintid: u32) {
+        self.mintid = mintid; 
+    }
+   
+    pub fn set_maxtid(&mut self, maxtid: u32) {
+        self.maxtid = maxtid;
     }
 
     pub fn set_treasury(&mut self, treasury: u64) {

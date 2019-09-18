@@ -82,6 +82,14 @@ impl Transaction {
         return self.body.from.clone();
     }
 
+    pub fn set_to_slips(&mut self, slips: Vec<Slip>) {
+        self.body.to = slips;
+    }
+    
+    pub fn set_from_slips(&mut self, slips: Vec<Slip>) {
+        self.body.from = slips;
+    }
+
     pub fn return_fees_usable(&self, publickey: &PublicKey) -> u64 {
         //  
         // we want to cache this value and reuse it in the future; 
@@ -107,6 +115,10 @@ impl Transaction {
         } 
 
         return input_fees - output_fees;
+    }
+
+    pub fn set_id(&mut self, id: u32) {
+        self.body.id = id;
     }
 
     pub fn set_tx_type(&mut self, tx_type: TransactionBroadcastType) {

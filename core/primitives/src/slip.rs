@@ -58,6 +58,12 @@ impl Slip {
     pub fn return_amt(&self) -> u64 {
         return self.body.amt;
     }
+
+    pub fn set_ids(&mut self, bid: u32, tid: u32, sid: u32) {
+        self.body.bid = bid;
+        self.body.tid = tid;
+        self.body.sid = sid;
+    }
     
     pub fn set_amt(&mut self, amt: u64) {
         self.body.amt = amt;
@@ -65,6 +71,10 @@ impl Slip {
 
     pub fn set_broadcast_type(&mut self, broadcast_type: SlipBroadcastType) {
         self.body.typ = broadcast_type;
+    }
+
+    pub fn set_spent_status(&mut self, spent_status: SlipSpentStatus) {
+        self.spent_status = spent_status; 
     }
 
     pub fn return_add(&self) -> PublicKey {

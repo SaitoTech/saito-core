@@ -48,30 +48,33 @@ impl Wallet {
     }
 
     pub fn create_transaction(
-        &self,
+        &mut self,
         publickey: PublicKey,
         tx_type: TransactionBroadcastType,
         fee: u64,
         amt: u64,
     ) -> Option<Transaction> {
         let total = fee + amt;
+        println!("TOTAL CREATE TRANSACTION {}", total);
         let from_slips = self.return_available_inputs(total);
+        println!("FROM SLIPS HERE: {:?}", from_slips);
 
         match from_slips {
             Some(slips) => {
-                let from_amt: u64 = slips.iter().map(|slip| slip.return_amt()).sum();
+                let from_amt: u64 = slips.iter()
+                    .map(|slip| slip.return_amt())
+                    .sum();
                 let to_recover_amt = from_amt - total;
+
+                println!("RECOVERED AMOUNT: {}", to_recover_amt);
 
                 let mut tx = Transaction::new();
                 tx.set_tx_type(tx_type);
 
-                for from_slip in slips.iter() {
-                    tx.add_from_slip(from_slip.clone());
-                }
+                slips.iter().for_each(|from_slip| tx.add_from_slip(from_slip.clone()));
                 
                 let mut to_slip = Slip::new(publickey);
                 to_slip.set_amt(to_recover_amt);
-
                 tx.add_to_slip(to_slip);
 
                 return Some(tx);
@@ -81,7 +84,36 @@ impl Wallet {
     }
 
     pub fn add_slip(&mut self, slip: Slip) {
-        self.body.slips.push(slip);
+        if slip.return_amt() == 0 {
+            return;
+        }
+
+        let mut hash_slip: [u8; 32] = [0; 32];
+        hash(slip.return_signature_source(), &mut hash_slip);
+
+        if !self.slips_hmap.contains_key(&hash_slip) {
+            self.body.slips.push(slip);
+            self.slips_hmap.insert(hash_slip, 1);
+        }
+    }
+
+    pub fn remove_slip(&mut self, slip: Slip) {
+        let mut hash_slip: [u8; 32] = [0; 32];
+        hash(slip.return_signature_source(), &mut hash_slip);
+
+        self.slips_hmap.remove(&hash_slip);
+        let mut pos: Option<usize> = None;
+
+        for (i, remove_slip) in self.body.slips.iter_mut().enumerate() {
+            if slip.return_signature_source() == remove_slip.return_signature_source() {
+               pos = Some(i);
+               break;
+            } 
+        }
+
+        if let Some(pos) = pos {
+            self.body.slips.remove(pos);
+        } 
     }
 
     pub fn return_balance(&self) -> u64 {
@@ -92,14 +124,15 @@ impl Wallet {
             .sum();
     }
 
-    pub fn return_available_inputs(&self, amt: u64) -> Option<Vec<Slip>>{
+    pub fn return_available_inputs(&mut self, amt: u64) -> Option<Vec<Slip>>{
         let mut slip_vec: Vec<Slip> = Vec::new();
         let mut slip_sum_amount: u64 = 0;
 
-        for slip in self.body.slips.iter() {
+        for slip in self.body.slips.iter_mut() {
             if slip.spent_status == SlipSpentStatus::Unspent {
                 slip_sum_amount += slip.return_amt();
                 slip_vec.push(slip.clone());
+                slip.set_spent_status(SlipSpentStatus::Spent);
  
                 if slip_sum_amount > amt {
                     return Some(slip_vec);

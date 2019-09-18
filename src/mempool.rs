@@ -1,4 +1,5 @@
 // use std::{thread, time};
+use std::sync::RwLock;
 use crate::wallet::Wallet;
 use crate::config::GENESIS_PERIOD;
 
@@ -67,18 +68,21 @@ impl Mempool {
 
     }
 
-    pub fn bundle_block (&mut self, wallet: &Wallet, previous_block_header: Option<BlockHeader>) -> Block {
+    pub fn bundle_block (&mut self, wallet: &RwLock<Wallet>, previous_block_header: Option<BlockHeader>) -> Block {
         let mut block: Block;
         let current_work: u64;
+        let publickey = wallet.read().unwrap().return_publickey();
 
         match previous_block_header {
             Some(previous_block_header) => {
-                block = Block::new(wallet.return_publickey(), previous_block_header.bsh);
+                block = Block::new(publickey,previous_block_header.bsh);
                 
                 let treasury = previous_block_header.treasury + previous_block_header.reclaimed;
                 let coinbase = (treasury as f64 / GENESIS_PERIOD as f64).round() as u64;
 
                 block.set_id(previous_block_header.bid + 1);
+                block.set_mintid(previous_block_header.mintid);
+                block.set_maxtid(previous_block_header.maxtid);
                 block.set_coinbase(coinbase);
                 block.set_treasury(treasury - coinbase);
                 block.set_prevhash(previous_block_header.bsh);
@@ -93,7 +97,7 @@ impl Mempool {
                 );
             },
             None => {
-                block = Block::new(wallet.return_publickey(), [0; 32]);
+                block = Block::new(publickey, [0; 32]);
                 current_work = 0;
             }
         }

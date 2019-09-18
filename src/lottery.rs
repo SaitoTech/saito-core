@@ -16,7 +16,7 @@ use crate::types::BlockMessage;
 use actix::*;
 
 pub trait LotteryGame {
-    fn play(&mut self, prevblk: &Block, wallet: &Arc<Wallet>, consensus_addr: &Recipient<NetworkMessage>);
+    fn play(&mut self, prevblk: &Block, wallet: &RwLock<Wallet>, consensus_addr: &Recipient<NetworkMessage>);
     fn generate_random_solution(&self) -> [u8; 32];
     fn is_valid_solution(&self, random_solution: [u8; 32], prevblk: &Block) -> bool;
     fn find_winner(&self, solution: &[u8; 32], prevblk: &Block) -> PublicKey;
@@ -30,8 +30,10 @@ pub struct Miner {
 }
 
 impl LotteryGame for Miner {
-    fn play(&mut self, prevblk: &Block, wallet: &Arc<Wallet>, consensus_addr: &Recipient<NetworkMessage>) {
+    fn play(&mut self, prevblk: &Block, wallet: &RwLock<Wallet>, consensus_addr: &Recipient<NetworkMessage>) {
         self.active = true;
+        let publickey = wallet.read().unwrap().return_publickey();
+
         while self.active {
             let solution = self.generate_random_solution();
 
@@ -42,7 +44,7 @@ impl LotteryGame for Miner {
                 let gt_solution = self.create_gt_solution(
                     solution,
                     prevblk.return_bsh(),
-                    wallet.return_publickey()
+                    publickey,
                 );
 
                 // Find winning node
@@ -58,7 +60,7 @@ impl LotteryGame for Miner {
                 println!("TOTAL FEES FOR CREATOR: {:?}", total_fees_for_creator);
 
                 // get the fees available from our publickey
-                let total_fees_in_block = prevblk.return_available_fees(&wallet.return_publickey());
+                let total_fees_in_block = prevblk.return_available_fees(&publickey);
 
                 // calculate the amount the creator can take for themselves
                 let creator_surplus = total_fees_for_creator - paid_burn_fee;
@@ -72,8 +74,8 @@ impl LotteryGame for Miner {
                 let node_share  = total_fees_for_miners_and_nodes - miner_share;
 
                 // create our golden ticket tx (au_tx)
-                let mut golden_tx: Transaction = match wallet.create_transaction(
-                    wallet.return_publickey(),
+                let mut golden_tx: Transaction = match wallet.write().unwrap().create_transaction(
+                    publickey,
                     TransactionBroadcastType::GoldenTicket,
                     100_000,
                     0
@@ -82,7 +84,7 @@ impl LotteryGame for Miner {
                     None => Transaction::new(),
                 };
                 
-                let mut miner_slip = Slip::new(wallet.return_publickey());
+                let mut miner_slip = Slip::new(publickey);
                 miner_slip.set_amt(miner_share);
 
                 let mut node_slip = Slip::new(winning_tx_address);
@@ -93,7 +95,9 @@ impl LotteryGame for Miner {
                 golden_tx.set_msg(bincode::serialize(&gt_solution).unwrap());
 
                 // sign TX
-                golden_tx.set_sig(wallet.create_signature(golden_tx.return_signature_source().as_slice()));
+                golden_tx.set_sig(
+                    wallet.read().unwrap().create_signature(golden_tx.return_signature_source().as_slice())
+                );
 
                 consensus_addr.do_send(NetworkMessage::IncomingTransaction(golden_tx)).unwrap();
             }
@@ -156,7 +160,7 @@ impl Miner {
 pub struct Lottery<G: LotteryGame> {
     pub game: G, 
     pub target: Option<Block>,
-    pub wallet: Arc<Wallet>,
+    pub wallet: Arc<RwLock<Wallet>>,
     pub consensus_addr: Recipient<NetworkMessage>,
 }
 
@@ -172,7 +176,7 @@ impl<G> Handler<BlockMessage> for Lottery<G> where G: LotteryGame + 'static {
 }
 
 impl<G> Lottery<G> where G: LotteryGame {
-    pub fn new(game: G, wallet: Arc<Wallet>, consensus_addr: Recipient<NetworkMessage>) -> Lottery<G> { 
+    pub fn new(game: G, wallet: Arc<RwLock<Wallet>>, consensus_addr: Recipient<NetworkMessage>) -> Lottery<G> { 
         return Lottery { game, target: None, wallet, consensus_addr }
     }
 

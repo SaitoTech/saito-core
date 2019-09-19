@@ -4,7 +4,6 @@ use std::sync::RwLock;
 
 use saito_primitives::block::{Block, BlockHeader};
 use saito_primitives::burnfee::BurnFee;
-use saito_primitives::helper::{create_timestamp};
 
 use crate::storage::Storage;
 use crate::wallet::Wallet;
@@ -35,7 +34,7 @@ impl BlockchainIndex {
 struct ChainNode {
     pub pos: usize,
     pub len: u32,
-    pub bf: f32,
+    pub bf: BurnFee,
     pub ts: u64,
     pub prevbsh: [u8; 32],
     pub bsh: [u8; 32]
@@ -45,7 +44,7 @@ impl ChainNode {
     pub fn new(
         pos: usize,
         len: u32,
-        bf: f32,
+        bf: BurnFee,
         ts: u64,
         prevbsh: [u8; 32],
         bsh: [u8; 32]
@@ -57,7 +56,7 @@ impl ChainNode {
         return ChainNode {
             pos: 0,
             len: 0,
-            bf: 0.0,
+            bf: BurnFee::new(0.0, 0),
             ts: 0,
             prevbsh: [0; 32],
             bsh: [0; 32],
@@ -308,7 +307,7 @@ impl Blockchain {
                     let mut longest_chain = ChainNode::new(
                         self.lc_pos,
                         0,
-        	        self.index.blocks[self.lc_pos].bf,
+        	        self.index.blocks[self.lc_pos].bf.clone(),
                         self.index.blocks[self.lc_pos].ts,
                         self.index.blocks[self.lc_pos].prevbsh,
                         [0; 32],
@@ -316,7 +315,7 @@ impl Blockchain {
                     let mut new_chain = ChainNode::new(
                         pos,
                         0,
-        	        self.index.blocks[pos].bf,
+        	        self.index.blocks[pos].bf.clone(),
                         self.index.blocks[pos].ts,
                         self.index.blocks[pos].prevbsh,
                         [0; 32],
@@ -336,7 +335,7 @@ impl Blockchain {
                             search_completed = true; 
                         }
 
-          	        search_node.bf         = self.index.blocks[search_node.pos].bf;
+          	        search_node.bf         = self.index.blocks[search_node.pos].bf.clone();
           	        search_node.bsh        = self.index.blocks[search_node.pos].bsh;
           	        search_node.prevbsh    = self.index.blocks[search_node.pos].prevbsh;
 
@@ -355,13 +354,13 @@ impl Blockchain {
 
             		    if search_node.bsh == longest_chain.prevbsh {
             		        longest_chain.len += 1; 
-            		        longest_chain.bf = longest_chain.bf + self.index.blocks[search_node.pos].bf;
+            		        longest_chain.bf.current += self.index.blocks[search_node.pos].bf.current;
             		        longest_chain.prevbsh = self.index.blocks[search_node.pos].prevbsh;
             		    }
             
             		    if search_node.bsh == new_chain.prevbsh {
             		        new_chain.len += 1; 
-            		        new_chain.bf = new_chain.bf + self.index.blocks[search_node.pos].bf;
+            		        new_chain.bf.current += self.index.blocks[search_node.pos].bf.current;
             		        new_chain.prevbsh = self.index.blocks[search_node.pos].prevbsh;
             		    }
             
@@ -401,7 +400,7 @@ impl Blockchain {
         	    // we are treating as the longest chain.
         	    //
         	    if new_chain.len > longest_chain.len 
-                        && new_chain.bf >= longest_chain.bf 
+                        && new_chain.bf.current >= longest_chain.bf.current
                         && shared_ancestor_pos_found == true {
 
 		        //
@@ -429,7 +428,7 @@ impl Blockchain {
    		        // have a choice of which block to support.
    		        //
    		        if new_chain.len == longest_chain.len 
-                            && new_chain.bf >= longest_chain.bf
+                            && new_chain.bf.current >= longest_chain.bf.current
                             && shared_ancestor_pos_found == true {
 
 			    //
@@ -506,7 +505,6 @@ impl Blockchain {
 	//
 	// old and new chains
 	//
-	let mut shared_ancestor_bsh:  Option<[u8;32]>;
 	let mut new_hash_to_hunt_for: Option<[u8;32]>;
 	let mut old_hash_to_hunt_for: Option<[u8;32]>;
 	let mut new_block_hashes:     Vec<[u8;32]>;
@@ -590,8 +588,6 @@ impl Blockchain {
             // these shouldn't be blank, but Options
 	    //
             println!("we are not the longest chain (?)");
-	    new_hash_to_hunt_for = Some([0;32]);
-	    old_hash_to_hunt_for = Some([0;32]);
 	    new_block_hashes     = vec![];
 	    old_block_hashes     = vec![];
 	}
@@ -615,7 +611,7 @@ impl Blockchain {
     //////////////////////////////////////////
     pub fn validate(
 	&mut self, 
-	mut blk                :Block,
+	blk                    :Block,
         wallet                 :&RwLock<Wallet>,
         shashmap               :&mut Shashmap,
 	pos		       :usize,
@@ -642,7 +638,7 @@ impl Blockchain {
 	//
         for tx in blk.body.txs.iter() { shashmap.insert_new_transaction(&tx); }
 
-	let mut force: u8 = 0;
+	let force: u8 = 0;
 
 	//
 	// unwind and wind
@@ -679,16 +675,16 @@ impl Blockchain {
 
     pub fn unwind_chain(
 	 &mut self,
-	 mut blk	      :Block,
-         wallet               :&RwLock<Wallet>,
-         shashmap             :&mut Shashmap,
-	 pos		      :usize,
- 	 mut i_am_the_longest_chain:u8,
-	 new_block_hashes     :Vec<[u8;32]>,
-	 old_block_hashes     :Vec<[u8;32]>,
-	 mut force            :u8,
-         mut resetting_flag   :u8,
-         mut current_unwind_index :usize,
+	 blk	                :Block,
+         wallet                 :&RwLock<Wallet>,
+         shashmap               :&mut Shashmap,
+	 pos		        :usize,
+ 	 i_am_the_longest_chain :u8,
+	 new_block_hashes       :Vec<[u8;32]>,
+	 old_block_hashes       :Vec<[u8;32]>,
+	 force                  :u8,
+         resetting_flag         :u8,
+         current_unwind_index   :usize,
     ) {
 
 
@@ -891,8 +887,6 @@ impl Blockchain {
                     // swap our hashes to wind/unwind.
                     //
                     let mut chain_to_unwind_hashes :Vec<[u8;32]> = vec![];
-                    let mut chain_to_unwind_idxs   :Vec<usize>   = vec![];
-                    let mut chain_to_unwind_ids    :Vec<u32>     = vec![];
 
                     //
                     // remove previous added
@@ -976,9 +970,6 @@ impl Blockchain {
                         );
                         return;
                 }
-
-                self.add_block_success(blk, wallet, pos, i_am_the_longest_chain, force);
-                return;
             } else {
 
                 if current_wind_index == 0 {
@@ -1029,7 +1020,7 @@ impl Blockchain {
         }
     }
 
-    pub fn add_block_success(&mut self, blk: Block, wallet: &RwLock<Wallet>, pos: usize, i_am_the_longest_chain: u8, force: u8) {
+    pub fn add_block_success(&mut self, blk: Block, wallet: &RwLock<Wallet>, _pos: usize, i_am_the_longest_chain: u8, _force: u8) {
         println!("SUCCESS ADDING BLOCK");
         
         // 
@@ -1089,7 +1080,7 @@ impl Blockchain {
 
     }
 
-    pub fn add_block_failure(&mut self, blk: Block, pos: usize, i_am_the_longest_chain: u8, force: u8) {
+    pub fn add_block_failure(&mut self, _blk: Block, _pos: usize, _i_am_the_longest_chain: u8, _force: u8) {
 	println!("FAILURE ADDING BLOCK");
 	println!("\n\n\n");
         
@@ -1104,7 +1095,7 @@ impl Blockchain {
         //
     }
 
-    pub fn validate_block(&self, blk: &Block) -> bool {
+    pub fn validate_block(&self, _blk: &Block) -> bool {
         return true;
     }
 

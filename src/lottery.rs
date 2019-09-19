@@ -6,7 +6,6 @@ use saito_primitives::{
     golden_ticket::GoldenTicket,
 };
 
-use std::cell::RefMut;
 use std::sync::{Arc, RwLock};
 
 use crate::wallet::Wallet;
@@ -38,7 +37,6 @@ impl LotteryGame for Miner {
             let solution = self.generate_random_solution();
 
             if self.is_valid_solution(solution, prevblk) {
-                println!("WE FOUND A VALID SOLUTION");
                 self.active = false;
 
                 let gt_solution = self.create_gt_solution(
@@ -49,21 +47,21 @@ impl LotteryGame for Miner {
 
                 // Find winning node
                 let winning_tx_address = self.find_winner(&solution, &prevblk);
-                println!("WINNING_TX_ADDRESS: {:?}", winning_tx_address);
 
                 // we need to calculate the fees that are gonna go in the slips here
                 let paid_burn_fee = prevblk.return_paid_burnfee();
-                println!("PAID BURN FEE: {:?}", paid_burn_fee);
 
                 // This is just inputs - outputs for all transactions in the block
                 let total_fees_for_creator = prevblk.return_available_fees(&prevblk.return_creator());
-                println!("TOTAL FEES FOR CREATOR: {:?}", total_fees_for_creator);
 
                 // get the fees available from our publickey
                 let total_fees_in_block = prevblk.return_available_fees(&publickey);
 
                 // calculate the amount the creator can take for themselves
-                let creator_surplus = total_fees_for_creator - paid_burn_fee;
+                let mut creator_surplus = 0;
+                if total_fees_for_creator > paid_burn_fee {
+                    creator_surplus = total_fees_for_creator - paid_burn_fee;
+                }
 
                 // find the amount that will be divied out to miners and nodes
                 let total_fees_for_miners_and_nodes = 
@@ -120,9 +118,6 @@ impl LotteryGame for Miner {
          let random_solution_slice = &random_solution[0..difficulty];
          let previous_hash_slice = &prevblk.return_bsh()[0..difficulty];
 
-         // println!("RANDOM SOLUTION {}", random_solution_slice);
-         // println!("PREVIOUS HASH SLICE {}", random_solution_slice);
-
          if random_solution_slice == previous_hash_slice {
              return true
          } else {
@@ -130,7 +125,7 @@ impl LotteryGame for Miner {
          }
     }
 
-    fn find_winner(&self, solution: &[u8; 32], prevblk: &Block) -> PublicKey {
+    fn find_winner(&self, _solution: &[u8; 32], prevblk: &Block) -> PublicKey {
         match prevblk.body.txs.first() {
             Some(tx) => {
                 return tx.return_to_slips()

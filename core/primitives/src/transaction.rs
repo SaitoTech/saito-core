@@ -129,7 +129,7 @@ impl Transaction {
     // TODO - calculate based on path information not 1
     //
     pub fn return_work_available(&self, _publickey: &str) -> u64 {
-        return 1;
+        return 100_000;
     }
 
     pub fn return_signature_source(&self) -> Vec<u8> {

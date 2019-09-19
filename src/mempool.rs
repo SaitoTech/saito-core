@@ -50,11 +50,11 @@ impl Mempool {
                 let work_needed = BurnFee::return_work_needed(
                     block_header.ts,
                     create_timestamp(),
-                    block_header.bf,
-                    100_000_000
+                    block_header.bf.start,
                 );
                 println!(
-                    "WORK ---- {:?} -- {:?} --- TX COUNT {:?}",
+                    "TS: {} -- WORK ---- {:?} -- {:?} --- TX COUNT {:?}",
+                    create_timestamp(), 
                     work_needed,
                     self.work_available,
                     self.transactions.len()
@@ -70,8 +70,9 @@ impl Mempool {
 
     pub fn bundle_block (&mut self, wallet: &RwLock<Wallet>, previous_block_header: Option<BlockHeader>) -> Block {
         let mut block: Block;
-        let current_work: u64;
         let publickey = wallet.read().unwrap().return_publickey();
+
+        let new_burnfee: BurnFee;
 
         match previous_block_header {
             Some(previous_block_header) => {
@@ -89,21 +90,19 @@ impl Mempool {
                 block.set_difficulty(previous_block_header.difficulty);
                 block.set_paysplit(previous_block_header.paysplit);
 
-                current_work = BurnFee::return_work_needed(
-                    previous_block_header.ts,
-                    create_timestamp(),
-                    previous_block_header.bf,
-                    100_000_000
+                new_burnfee = BurnFee::adjust_work_needed(
+                    previous_block_header,
+                    block.body.ts,
                 );
             },
             None => {
                 block = Block::new(publickey, [0; 32]);
-                current_work = 0;
+                new_burnfee = BurnFee::new(10.0, 0);
             }
         }
 
         block.set_transactions(&mut self.transactions);
-        block.set_burnfee(BurnFee::new(0.0, current_work));
+        block.set_burnfee(new_burnfee);
 
 	self.clear_transactions();
 	return block;

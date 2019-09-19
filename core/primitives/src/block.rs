@@ -45,11 +45,11 @@ pub struct BlockBody {
 //
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct BlockHeader {
-    pub bf:  f32,
     pub bsh: [u8;32],
     pub prevbsh: [u8;32],
     pub bid: u32,
     pub ts:  u64,
+    pub bf: BurnFee,
     pub mintid: u32,
     pub maxtid: u32,
     pub difficulty: f32,
@@ -62,11 +62,11 @@ pub struct BlockHeader {
 
 impl BlockHeader {
     pub fn new (
-        bf: f32,
         bsh: [u8;32],
         prevbsh: [u8;32],
         bid: u32,
         ts: u64,
+        bf: BurnFee,
         mintid: u32,
         maxtid: u32,
         difficulty: f32,
@@ -77,11 +77,11 @@ impl BlockHeader {
         reclaimed: u64
     ) -> BlockHeader {
         return BlockHeader {
-            bf,
             bsh, 
             prevbsh,
             bid,
             ts,
+            bf,
             mintid,
             maxtid,
             difficulty,
@@ -91,26 +91,6 @@ impl BlockHeader {
             coinbase,
             reclaimed
         };
-    }
-}
-
-impl Default for BlockHeader {
-    fn default() -> Self {
-        return BlockHeader{
-            bf: 0.0,
-            bsh: [0;32],
-            prevbsh: [0;32],
-            bid: 0,
-            ts: 0,
-            mintid: 0,
-            maxtid: 0,
-            difficulty: 0.0,
-            paysplit: 0.5,
-            vote: 0,
-            treasury: 286_810_000_000_000_000,
-            coinbase: 0,
-            reclaimed: 0 
-        }
     }
 }
 
@@ -133,7 +113,6 @@ impl BlockBody {
         };
     }
 }
-
 
 impl Block {
     pub fn new(creator: PublicKey, prevbsh: [u8;32]) -> Block {
@@ -158,11 +137,11 @@ impl Block {
 
     pub fn header(&self) -> BlockHeader {
         return BlockHeader::new(
-            self.body.bf.start,
             self.return_bsh(),
             self.body.prevbsh,
             self.body.id,
             self.body.ts,
+            self.body.bf.clone(),
             self.mintid,
             self.maxtid,
             self.body.difficulty,
@@ -189,14 +168,6 @@ impl Block {
         for (i, tx) in self.body.txs.iter_mut().enumerate() {
             let current_tid = maxtid + i as u32 + 1;
             let mut current_sid = 0;
-            
-            println!("CURRENT TID: {}", current_tid);
-
-//            vec!(tx.return_to_slips(), tx.return_from_slips())
-//                .iter_mut()
-//                .flatten()
-//                .enumerate()
-//                .for_each(|(j, slip)| slip.set_ids(bid, current_tid, j as u32 + 1));
 
             let to_slips = tx.return_to_slips()
                 .iter_mut()
@@ -205,7 +176,6 @@ impl Block {
                     current_sid += 1;
                     return slip.clone();
                 })
-                //.collect::<Vec<_>>();
                 .collect();
             
             tx.set_to_slips(to_slips);
@@ -217,7 +187,7 @@ impl Block {
                     current_sid += 1;
                     return slip.clone();
                 })
-                .collect::<Vec<_>>();
+                .collect();
             
             tx.set_from_slips(from_slips);
 

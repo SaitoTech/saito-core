@@ -1,4 +1,3 @@
-use std::path::Path;
 use std::fs::{File};
 use std::io::prelude::*;
 use std::str;
@@ -6,7 +5,6 @@ use std::str;
 use data_encoding::HEXLOWER;
 
 use saito_primitives::block::{Block, BlockBody};
-use saito_primitives::helper::create_timestamp;
 
 pub const BLOCKS_DIR: &str = "./data/blocks/";
 

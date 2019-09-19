@@ -1,5 +1,4 @@
-use std::{thread, time};
-use std::cell::RefCell;
+use std::{time};
 use std::sync::{Arc, RwLock};
 
 use crate::blockchain::Blockchain;
@@ -59,22 +58,20 @@ impl Consensus {
         return Consensus {
             blockchain: Blockchain::new(),
             mempool:    Mempool::new(),
-            wallet:     wallet,
             shashmap:   Shashmap::new(),
+            wallet,
             lottery_addr
         }
     }
 
     pub fn heartbeat(&mut self, ctx: &mut Context<Self>) {
-        ctx.run_later(time::Duration::from_millis(50), |act, ctx| {
-            println!("IN HEARBEAT");
+        ctx.run_later(time::Duration::from_millis(1000), |act, ctx| {
             act.try_bundle();
             act.heartbeat(ctx);
         });
     }
 
     pub fn try_bundle(&mut self) {
-        println!("TRYING TO BUNDLE BLOCK");
         let last_block_header = self.blockchain.return_latest_block_header();
 
         // possibly pass by reference?
@@ -85,19 +82,14 @@ impl Consensus {
             blk.set_reclaimed(reclaimed_funds);
             
             println!("BLOCK : {:?}", blk);
+ 
             // need to add some control flow if a block isn't produced successfully
             self.blockchain.add_block(blk, &mut self.wallet, &mut self.shashmap);
-
-            // add slips to wallet after successfully producing block
-            //blk.body.txs
-            //    .iter() 
-            //    .flat_map(|tx| tx.return_to_slips())
-            //    .filter(|slip| slip.return_add() == self.wallet.return_publickey())
-            //    .for_each(move |slip| self.wallet.add_slip(slip));
 
             let block_header = self.blockchain.return_latest_block_header();
             let block_message = BlockMessage::new(Storage::read_block_from_disk(block_header.unwrap().bsh));
 
+            // send the latest block to the lottery to start the next game 
             self.lottery_addr.do_send(block_message).unwrap();
         }
 

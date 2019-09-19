@@ -55,23 +55,20 @@ impl Wallet {
         amt: u64,
     ) -> Option<Transaction> {
         let total = fee + amt;
-        println!("TOTAL CREATE TRANSACTION {}", total);
         let from_slips = self.return_available_inputs(total);
-        println!("FROM SLIPS HERE: {:?}", from_slips);
 
         match from_slips {
             Some(slips) => {
                 let from_amt: u64 = slips.iter()
                     .map(|slip| slip.return_amt())
                     .sum();
+
                 let to_recover_amt = from_amt - total;
-
-                println!("RECOVERED AMOUNT: {}", to_recover_amt);
-
                 let mut tx = Transaction::new();
                 tx.set_tx_type(tx_type);
 
-                slips.iter().for_each(|from_slip| tx.add_from_slip(from_slip.clone()));
+                slips.iter()
+                     .for_each(|from_slip| tx.add_from_slip(from_slip.clone()));
                 
                 let mut to_slip = Slip::new(publickey);
                 to_slip.set_amt(to_recover_amt);
@@ -84,9 +81,8 @@ impl Wallet {
     }
 
     pub fn add_slip(&mut self, slip: Slip) {
-        if slip.return_amt() == 0 {
-            return;
-        }
+        // don't add any slips with zero amt
+        if slip.return_amt() == 0 { return; }
 
         let mut hash_slip: [u8; 32] = [0; 32];
         hash(slip.return_signature_source(), &mut hash_slip);

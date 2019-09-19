@@ -123,7 +123,7 @@ impl LotteryGame for Miner {
  
         let difficulty_grain = U256::from((difficulty_grain * 16.0).round() as u32);
  
-        if random_solution_decimal > previous_hash_decimal
+        if random_solution_decimal >= previous_hash_decimal
             && (random_solution_decimal - previous_hash_decimal) <= difficulty_grain {
             return true
         } else {

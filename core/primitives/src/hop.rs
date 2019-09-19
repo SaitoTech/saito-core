@@ -3,8 +3,8 @@ use crate::crypto::{PublicKey, Signature};
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Hop {
-    from: PublicKey,
-    to: PublicKey,
+    pub from: PublicKey,
+    pub to: PublicKey,
     sig: Signature,
 }
 

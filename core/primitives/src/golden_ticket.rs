@@ -17,17 +17,17 @@ impl GoldenTicket {
         return GoldenTicket{vote, target, random, publickey};
     }
 
-    fn calculate_difficulty (&self, prevblk: &Block) -> f32 {
+    pub fn calculate_difficulty (&self, previous_difficulty: f32) -> f32 {
         return match self.vote {
-            1 => prevblk.return_difficulty() + 0.01,
-            _ => prevblk.return_difficulty() - 0.01
+            1 => previous_difficulty + 0.01,
+            _ => previous_difficulty - 0.01
         }
     }
 
-    fn calculate_paysplit (&self, prevblk: &Block) -> f32 {
+    pub fn calculate_paysplit (&self, previous_paysplit: f32) -> f32 {
         return match self.vote {
-            1 => prevblk.return_paysplit() + 0.01,
-            _ => prevblk.return_paysplit() - 0.01
+            1 => previous_paysplit + 0.01,
+            _ => previous_paysplit - 0.01
         }
     }
 }

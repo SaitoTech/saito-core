@@ -85,6 +85,10 @@ impl Slip {
     pub fn return_signature_source(&self) -> Vec<u8> {
        return bincode::serialize(&self.body).unwrap();
     }
+
+    pub fn set_bsh(&mut self, bsh: [u8; 32]) {
+        self.body.bsh = bsh;
+    }
 }
 
 

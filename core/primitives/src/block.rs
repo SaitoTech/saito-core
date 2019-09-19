@@ -104,7 +104,7 @@ impl BlockBody {
     	    creator:     block_creator,
     	    txs:         vec![],
 	    bf:          BurnFee::new(0.0, 0),
-    	    difficulty:  0.0,
+    	    difficulty:  1.0,
     	    paysplit:    0.5,
     	    vote:        0,
     	    treasury:    286_810_000_000_000_000,
@@ -164,10 +164,17 @@ impl Block {
         let tx_length = self.body.txs.len();
         let maxtid = self.maxtid;
         let bid = self.body.id;
+        let bsh = self.return_bsh();
+
+        // used for calculating cumulative fees
+        let mut cumulative_fees = 0;
 
         for (i, tx) in self.body.txs.iter_mut().enumerate() {
             let current_tid = maxtid + i as u32 + 1;
             let mut current_sid = 0;
+            
+            // set tx id
+            tx.set_id(current_tid);
 
             let to_slips = tx.return_to_slips()
                 .iter_mut()
@@ -184,14 +191,16 @@ impl Block {
                 .iter_mut()
                 .map(move |slip| {
                     slip.set_ids(bid, current_tid, current_sid);
+                    slip.set_bsh(bsh);
                     current_sid += 1;
                     return slip.clone();
                 })
                 .collect();
             
             tx.set_from_slips(from_slips);
-
-            tx.set_id(current_tid);
+            
+            // calculate cumulative fees 
+            cumulative_fees = tx.calculate_cumulative_fees(cumulative_fees);
         }
         
         self.mintid = self.maxtid + 1;

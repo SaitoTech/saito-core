@@ -7,6 +7,7 @@ use saito_primitives::{
 };
 
 use std::sync::{Arc, RwLock};
+use bigint::uint::U256;
 
 use crate::wallet::Wallet;
 use crate::network::NetworkMessage;
@@ -26,6 +27,7 @@ pub trait LotteryGame {
 pub struct Miner {
     pub active: bool,
     pub difficulty: f32,
+    pub paysplit: f32,
 }
 
 impl LotteryGame for Miner {
@@ -113,31 +115,83 @@ impl LotteryGame for Miner {
     }
 
     fn is_valid_solution(&self, random_solution: [u8; 32], prevblk: &Block) -> bool {
-         let difficulty = self.difficulty.round() as usize;
+        let difficulty = prevblk.return_difficulty().round() as usize;
+        let difficulty_grain: f32 = prevblk.return_difficulty() % 1.0;
 
-         let random_solution_slice = &random_solution[0..difficulty];
-         let previous_hash_slice = &prevblk.return_bsh()[0..difficulty];
-
-         if random_solution_slice == previous_hash_slice {
-             return true
-         } else {
-             return false;
-         }
+        let random_solution_decimal = U256::from_big_endian(&random_solution[0..difficulty]);
+        let previous_hash_decimal = U256::from_big_endian(&prevblk.return_bsh()[0..difficulty]);
+ 
+        let difficulty_grain = U256::from((difficulty_grain * 16.0).round() as u32);
+ 
+        if random_solution_decimal > previous_hash_decimal
+            && (random_solution_decimal - previous_hash_decimal) <= difficulty_grain {
+            return true
+        } else {
+            return false;
+        }
     }
 
-    fn find_winner(&self, _solution: &[u8; 32], prevblk: &Block) -> PublicKey {
-        match prevblk.body.txs.first() {
-            Some(tx) => {
-                return tx.return_to_slips()
-                    .first()
-                    .unwrap()
-                    .return_add();
-            },
-            None => {
-                // the rich get richer 
-                return prevblk.return_creator();
+    fn find_winner(&self, solution: &[u8; 32], prevblk: &Block) -> PublicKey {
+        // sanity check
+        //
+        if prevblk.body.txs.len() == 0 { 
+            return prevblk.return_creator();
+        }
+
+        // convery byte array to decimal
+        let max_solution: u64 = std::u64::MAX;
+        let mut decimal_solution: u64 = 0;
+
+        for i in 0..8 {
+            decimal_solution |= solution[i] as u64;
+            decimal_solution <<= 8 * i;
+        }
+
+        let winning_float: f32 = decimal_solution as f32 / max_solution as f32;
+
+        let last_block_cumulative_fees = prevblk.body.txs.last().unwrap().return_fees_cumulative();
+        let winning_cumulative_fee_number = (last_block_cumulative_fees as f32 * winning_float as f32).round() as u64; 
+        let mut winning_tx: Option<&Transaction> = None;
+
+        for tx in prevblk.body.txs.iter() {
+            if tx.return_fees_cumulative() < winning_cumulative_fee_number {
+                winning_tx = Some(&tx);
+            }
+            else {  
+                break;
             }
         }
+
+        match winning_tx {
+            Some(tx) => {
+                let pathlength = tx.return_path().len();
+                if  pathlength == 0 {
+                    return tx.return_from_slips()
+                        .last()
+                        .unwrap()
+                        .return_add()
+                } else {
+                    let mut winning_addr: PublicKey; 
+                    let z: f32 = winning_float * pathlength as f32;
+                    
+                    // default to using this first one in the path here  
+                    winning_addr = tx.return_path()
+                                     .first()
+                                     .unwrap()
+                                     .to;
+                    for j in 0..pathlength {
+                        let a: f32 = 2.0 - (1.0 / 2_u32.pow(j as u32 - 1) as f32) as f32;
+                        if a <= z { 
+                            winning_addr = tx.return_path()[j].to;
+                            break;
+                        } 
+                    }
+                    return winning_addr
+                }
+            },
+            None => return prevblk.return_creator(),
+        }
+
     }
 
     fn create_gt_solution(&self, random: [u8; 32], target: [u8; 32], publickey: PublicKey) -> GoldenTicket {
@@ -147,7 +201,7 @@ impl LotteryGame for Miner {
 
 impl Miner {
     pub fn new() -> Miner {
-        return Miner { active: true, difficulty: 2.0 } 
+        return Miner { active: true, difficulty: 2.0, paysplit: 0.5 } 
     }
 }
 

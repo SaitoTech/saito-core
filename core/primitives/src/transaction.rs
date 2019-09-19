@@ -24,21 +24,21 @@ pub struct TransactionBody {
     ver:  f32,
     pub typ:  TransactionBroadcastType,
     path: Vec<Hop>,
-    msg:  Vec<u8>,
+    pub msg:  Vec<u8>,
     ps:   u8,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Transaction {
 
-    body: TransactionBody,
+    pub body: TransactionBody,
     is_valid: u8,
 
 //    msg_hash: [u8; 32],
 //    size: u64,
 //    fees_total: u64,
 //    fees_usable_for_block_producer: u64,
-//    fees_cumulative: s64,
+    fees_cumulative: u64,
 //    decrypted_msg: Vec<u8>,
 
 }
@@ -48,17 +48,18 @@ impl Transaction {
         return Transaction {
             body: TransactionBody {
                 id:   0,
-		ts:   create_timestamp(),
-		to:   vec![],
-		from: vec![],
-		sig:  Signature::from_compact(&[0; 64]).unwrap(),
-		ver:  0.1,
-		typ:  TransactionBroadcastType::Normal,
-		path: vec![],
-		msg:  vec![],
-		ps:   0
+                ts:   create_timestamp(),
+                to:   vec![],
+                from: vec![],
+                sig:  Signature::from_compact(&[0; 64]).unwrap(),
+                ver:  0.1,
+                typ:  TransactionBroadcastType::Normal,
+                path: vec![],
+                msg:  vec![],
+                ps:   0
             },
-            is_valid: 0
+            is_valid: 0,
+            fees_cumulative: 0
         };
     }
 
@@ -68,6 +69,10 @@ impl Transaction {
 
     pub fn add_from_slip(&mut self, slip: Slip) {
         self.body.from.push(slip)
+    }
+
+    pub fn return_msg(self) -> Vec<u8> {
+        return self.body.msg;
     }
 
     pub fn set_msg(&mut self, msg: Vec<u8>) {
@@ -85,9 +90,38 @@ impl Transaction {
     pub fn set_to_slips(&mut self, slips: Vec<Slip>) {
         self.body.to = slips;
     }
-    
+
     pub fn set_from_slips(&mut self, slips: Vec<Slip>) {
         self.body.from = slips;
+    }
+
+    pub fn return_path(&self) -> Vec<Hop> {
+        return self.body.path.clone();
+    }
+
+    pub fn return_fees_total(&self) -> u64 {
+        //  
+        // we want to cache this value and reuse it in the future; 
+        //
+        let input_fees: u64 = self.body.from
+            .iter()
+            .map(|slip| slip.return_amt())
+            .sum();
+
+        let output_fees: u64 = self.body.to
+            .iter()
+            .map(|slip| slip.return_amt())
+            .sum();
+
+        // need stronger checks here for validation
+        // this should not be possible to do unless your 
+        // receiving the block reward 
+
+        if input_fees < output_fees {
+            return 0;
+        } 
+
+        return input_fees - output_fees;
     }
 
     pub fn return_fees_usable(&self, publickey: &PublicKey) -> u64 {
@@ -120,6 +154,10 @@ impl Transaction {
     pub fn set_id(&mut self, id: u32) {
         self.body.id = id;
     }
+    
+    pub fn return_tx_type(&self) -> TransactionBroadcastType {
+        return self.body.typ;
+    }
 
     pub fn set_tx_type(&mut self, tx_type: TransactionBroadcastType) {
         self.body.typ = tx_type;
@@ -139,6 +177,24 @@ impl Transaction {
     pub fn set_sig(&mut self, sig: Signature) {
         self.body.sig = sig 
     }
+
+    pub fn calculate_cumulative_fees(&mut self, last_fees: u64) -> u64 {
+        let total_fees = self.return_fees_total();
+        let mut cumulative_fees = 0;
+
+        for i in 0..self.body.path.len() {
+            cumulative_fees += (total_fees as f32 / (2_u32).pow(i as u32) as f32).round() as u64
+        }
+
+        // cache the value so we only need to run this once
+        self.fees_cumulative = cumulative_fees;
+
+        return cumulative_fees;
+    }
+
+    pub fn return_fees_cumulative(&self) -> u64 {
+        return self.fees_cumulative;
+    }
 }
 
 impl Clone for TransactionBody {
@@ -157,7 +213,6 @@ impl Clone for TransactionBody {
         }
     }
 }
-
 
 
 

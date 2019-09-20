@@ -965,7 +965,7 @@ impl Blockchain {
                         new_block_hashes,
                         old_block_hashes,
                         force,
-                        1,
+                        resetting_flag,
                         current_wind_index+1,
                         );
                         return;

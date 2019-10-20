@@ -128,6 +128,8 @@ impl Blockchain {
 
     pub fn add_block(&mut self, blk: Block, wallet: &RwLock<Wallet>, shashmap: &mut Shashmap) {
 
+	println!("add block");
+
 	///////////////////
 	// SANITY CHECKS //
 	///////////////////

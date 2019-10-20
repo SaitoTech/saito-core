@@ -3,12 +3,14 @@ use saito_core::consensus::Consensus;
 use saito_core::runtime::Runtime;
 use saito_core::wallet::Wallet;
 use saito_core::lottery::{Lottery, Miner};
-
+use std::io::prelude::*;
 use std::sync::{Arc, RwLock};
 
 use actix::*;
 
 fn main() {
+
+    println!("start main");
 
     //
     // Actix framework allows communications between different

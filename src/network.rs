@@ -79,6 +79,7 @@ pub enum NetworkRequest {
 
 impl Network {
     pub fn init(&self, publickey: PublicKey) {
+        println!("init network");
         let request = NetworkRequest::Transaction;
         loop {
             let three_seconds = time::Duration::from_millis(3000);
@@ -92,6 +93,7 @@ impl Network {
     }
 
     pub fn send_transaction_to_consensus(&self, publickey: PublicKey) {
+        println!("send tx");
         let mut tx: Transaction = Transaction::new();
         let mut slip: Slip = Slip::new(publickey);
 
@@ -102,6 +104,7 @@ impl Network {
     }
 
     pub fn send_block_to_consensus(&self, publickey: PublicKey) {
+        println!("send block");
         let blk = Block::new(publickey, [1;32]);
         self.consensus_addr.do_send(NetworkMessage::IncomingBlock(blk)).unwrap();
     }

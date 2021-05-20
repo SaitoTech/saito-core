@@ -1,4 +1,4 @@
-# OUDATED
+# OUTDATED
 
 New repo: https://github.com/SaitoTech/saito-rust
 
